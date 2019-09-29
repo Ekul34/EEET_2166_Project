@@ -6,19 +6,18 @@
  */
 #include "TL_I1.h"
 
-
 void extCommunication(void)
 {
     // some code that talks with other nodes
+    // Send status of LEDs/State
+    // receive commands to change  LED | Day | Night | train start | train finish | Boom gate fail
 };
 
 void gpioController(void)
 {
-    // some code that controls the LEDs
-    // some code that that reads car and pedestrian (maybe in a different thread?)
+    // code that controls the LED GPIO pin based on the current values in the struct
+    // code that that reads car and pedestrian (maybe in a different thread?)
 }
-
-
 
 void daySequence(void)
 {
