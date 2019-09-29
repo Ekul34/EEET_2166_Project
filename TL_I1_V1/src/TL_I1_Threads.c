@@ -7,16 +7,25 @@
 #include "TL_I1.h"
 
 
+void extCommunication(void)
+{
+    // some code that talks with other nodes
+};
+
+void gpioController(void)
+{
+    // some code that controls the LEDs
+    // some code that that reads car and pedestrian (maybe in a different thread?)
+}
+
+
 
 void daySequence(void)
 {
-
     switch(intersection.seqState)
-
     {   //           North                                       South
         //           East                                        West
         //           Straight    Left    Right    Pedestrian     Straight    Left    Right    Pedestrian
-
         // Safe start
         case initial:
             setState(red,        red,    red,     red,           red,        red,    red,     red,
@@ -59,18 +68,41 @@ void daySequence(void)
         case day12:
             setState(red,        red,    red,     red,           red,        red,    red,     red,
                      red,        red,    red,     red,           red,        red,    red,     red);      intersection.seqState = day1; break;
-
         default:      intersection.seqState = initial;
     }
 };
 
-//void nightSequence(void)
-//{
-//    switch(intersection.seqState)
-//    {
-//
-//        case initial:
-//        break;
-//    }
-//};
+void nightSequence(void)
+{
+    switch(intersection.seqState)
+    {   //           North                                       South
+        //           East                                        West
+        //           Straight    Left    Right    Pedestrian     Straight    Left    Right    Pedestrian
+        // Safe start
+        case initial:
+            setState(red,        red,    red,     red,           red,        red,    red,     red,
+                     red,        red,    red,     red,           red,        red,    red,     red);      intersection.seqState = night4;  break;
+        // NS start
+        case night4:
+            setState(green,      green,  off,     red,           green,      green,  off,     red,
+                     red,        red,    red,     green,         red,        red,    red,     green);    intersection.seqState = night5;  break;
+        case night5:
+            setState(yellow,     yellow, off,     red,           yellow,     yellow, off,     red,
+                     red,        red,    red,     flashing,      red,        red,    red,     flashing); intersection.seqState = night6;  break;
+        case night6:
+            setState(red,        red,    red,     red,           red,        red,    red,     red,
+                     red,        red,    red,     red,           red,        red,    red,     red);      intersection.seqState = night10;  break;
+        // EW start
+        case night10:
+            setState(red,        red,    red,     green,         red,        red,    red,     green,
+                     green,      green,  off,     red,           green,      green,  off,     red);      intersection.seqState = night11; break;
+        case night11:
+            setState(red,        red,    red,     green,         red,        red,    red,     green,
+                     green,      green,  off,     red,           green,      green,  off,     red);      intersection.seqState = night12; break;
+        case night12:
+            setState(red,        red,    red,     red,           red,        red,    red,     red,
+                     red,        red,    red,     red,           red,        red,    red,     red);      intersection.seqState = night4; break;
+        default:      intersection.seqState = initial;
+    }
+};
 

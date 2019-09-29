@@ -7,16 +7,36 @@
 #include "TL_I1.h"
 
 int main(void) {
-	puts("Intersection 1 is starting");
+	puts("Intersection 1 has started");
 
-	printf("%d\n", intersection.north.straight);
+	printf("State\tState\tnS\tnR\teS\teR\n");
+    for (int i=0; i < 14; i++)      /// Test some outputs of day state machine
+    {
+        printf("%d\t",  intersection.seqState);
+        daySequence();
+        printf("%d\t",  intersection.seqState);
+        printf("%d\t",  intersection.north.straight);
+        printf("%d\t",  intersection.north.right);
+        printf("%d\t",  intersection.east.straight);
+        printf("%d\t\n",intersection.east.right);
+    }
 
-	daySequence();
+    printf("------------------------------------------\n");
+    printf("State\tState\tnS\tnR\teS\teR\n");
+    intersection.seqState = 0; // Change state back to 0 before moving into night sequence
 
+    for (int i=0; i < 14; i++)      /// Test some outputs of night state machine
+    {
+        printf("%d\t",  intersection.seqState);
+        nightSequence();
+        printf("%d\t",  intersection.seqState);
+        printf("%d\t",  intersection.north.straight);
+        printf("%d\t",  intersection.north.right);
+        printf("%d\t",  intersection.east.straight);
+        printf("%d\t\n",intersection.east.right);
+    }
 
-    printf("%d\n", intersection.north.straight);
-    printf("%d\n", intersection.seqState);
-
+    puts("Intersection 1 has finished");
     return 0;
 }
 
