@@ -36,6 +36,9 @@ int main(void) {
         printf("%d\t\n",intersection.east.right);
     }
 
+    //gpioController(); // Uncomment to run hardware // will crash if not running on DE10
+
+
     puts("Intersection 1 has finished");
     return 0;
 }
