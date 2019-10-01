@@ -5,41 +5,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "TL_I1.h"
+#include <pthread.h>
+
 
 int main(void) {
 	puts("Intersection 1 has started");
 
-	printf("State\tState\tnS\tnR\teS\teR\n");
-    for (int i=0; i < 14; i++)      /// Test some outputs of day state machine
-    {
-        printf("%d\t",  intersection.seqState);
-        daySequence();
-        printf("%d\t",  intersection.seqState);
-        printf("%d\t",  intersection.north.straight);
-        printf("%d\t",  intersection.north.right);
-        printf("%d\t",  intersection.east.straight);
-        printf("%d\t\n",intersection.east.right);
-    }
+	pthread_t  daySequenceID; // Storage thread IDs, used for joins ect ect
+	struct intersection intersection = {{red}}; // Create intersection struct of type intersection
 
-    printf("------------------------------------------\n");
-    printf("State\tState\tnS\tnR\teS\teR\n");
-    intersection.seqState = 0; // Change state back to 0 before moving into night sequence
+	printf("Main %d\n",intersection.seqState);
+    pthread_create (&daySequenceID, NULL, daySequence, &intersection);
+    pthread_join(daySequenceID,NULL);
+    printf("Main %d\n",intersection.seqState);
 
-    for (int i=0; i < 14; i++)      /// Test some outputs of night state machine
-    {
-        printf("%d\t",  intersection.seqState);
-        nightSequence();
-        printf("%d\t",  intersection.seqState);
-        printf("%d\t",  intersection.north.straight);
-        printf("%d\t",  intersection.north.right);
-        printf("%d\t",  intersection.east.straight);
-        printf("%d\t\n",intersection.east.right);
-    }
+//    //gpioController(); // Uncomment to run hardware // will crash if not running on DE10
 
-    //gpioController(); // Uncomment to run hardware // will crash if not running on DE10
-
-
-    puts("Intersection 1 has finished");
+    puts("\nIntersection 1 has finished");
     return 0;
 }
-

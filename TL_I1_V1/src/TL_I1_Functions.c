@@ -6,26 +6,33 @@
  */
 #include "TL_I1.h"
 
-void setState(int northStraight, int northLeft,int northRight, int northPedestrian, int southStraight, int southLeft, int southRight, int southPedestrian, int eastStraight,  int eastLeft,  int eastRight,  int eastPedestrian,int westStraight,  int westLeft,  int westRight,  int westPedestrian)
+void setState(int northStraight, int northLeft,int northRight, int northPedestrian, int southStraight, int southLeft, int southRight, int southPedestrian, int eastStraight,  int eastLeft,  int eastRight,  int eastPedestrian,int westStraight,  int westLeft,  int westRight,  int westPedestrian, void *data)
 {
-    intersection.north.straight   = northStraight;
-    intersection.north.left       = northLeft;
-    intersection.north.right      = northRight;
-    intersection.north.pedestrian = northPedestrian;
+    struct intersection **Ptr = (struct intersection*) data;
 
-    intersection.south.straight   = southStraight;
-    intersection.south.left       = southLeft;
-    intersection.south.right      = southRight;
-    intersection.south.pedestrian = southPedestrian;
+    (*Ptr)->north.straight   = northStraight;
+    (*Ptr)->north.left       = northLeft;
+    (*Ptr)->north.right      = northRight;
+    (*Ptr)->north.pedestrian = northPedestrian;
 
-    intersection.east.straight    = eastStraight;
-    intersection.east.left        = eastLeft;
-    intersection.east.right       = eastRight;
-    intersection.east.pedestrian  = eastPedestrian;
+    (*Ptr)->south.straight   = southStraight;
+    (*Ptr)->south.left       = southLeft;
+    (*Ptr)->south.right      = southRight;
+    (*Ptr)->south.pedestrian = southPedestrian;
 
-    intersection.west.straight    = westStraight;
-    intersection.west.left        = westLeft;
-    intersection.west.right       = westRight;
-    intersection.west.pedestrian  = westPedestrian;
+    (*Ptr)->east.straight    = eastStraight;
+    (*Ptr)->east.left        = eastLeft;
+    (*Ptr)->east.right       = eastRight;
+    (*Ptr)->east.pedestrian  = eastPedestrian;
+
+    (*Ptr)->west.straight    = westStraight;
+    (*Ptr)->west.left        = westLeft;
+    (*Ptr)->west.right       = westRight;
+    (*Ptr)->west.pedestrian  = westPedestrian;
+
+    // Uncomment incase of debug
+    //    printf("Function %d\n",(*Ptr)->seqState);
+    //    (*Ptr)->seqState = 3;
+    //    printf("Function %d\n",(*Ptr)->seqState);
 };
 

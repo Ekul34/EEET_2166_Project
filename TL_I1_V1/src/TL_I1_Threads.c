@@ -5,6 +5,7 @@
  *      Author: LukeT, TimD
  */
 #include "TL_I1.h"
+#include <unistd.h> // Used for sleep()
 
 // Includes for hardware "gpioController()"
 #include <stdlib.h>
@@ -45,10 +46,10 @@ void gpioController(void) // This function will crash if not on real DE10 hardwa
     int tempVal; // temp store any values read from gpio_0 or Switches (placeholder)
 
     // GPIO global pointers
-    uintptr_t gpio_LEDs = NULL;
-    uintptr_t gpio_0_outputs = NULL;
-    uintptr_t gpio_1_inputs = NULL;
-    uintptr_t Switches_inputs = NULL;
+    uintptr_t gpio_LEDs = 0;
+    uintptr_t gpio_0_outputs = 0;
+    uintptr_t gpio_1_inputs = 0;
+    uintptr_t Switches_inputs = 0;
 
     // Map outputs
     gpio_LEDs = mmap_device_io(PIO_SIZE, LEDs_BASE);
@@ -61,135 +62,163 @@ void gpioController(void) // This function will crash if not on real DE10 hardwa
     tempVal = in32(Switches_inputs); // Read from DE10 4 slide switches
     tempVal = in32(gpio_1_inputs);   // Read from DE10 first 16 pins of GPIO_1
     //Write to outputs
-    out32(gpio_LEDs, 0);           // Write to DE10 LEDs
-    out32(gpio_0_outputs, 0);        // Write to DE10 first 16 pins of GPIO_0
+    out32(gpio_LEDs, tempVal);       // Write to DE10 LEDs
+    out32(gpio_0_outputs, tempVal);  // Write to DE10 first 16 pins of GPIO_0
 
-    // Write outputs to WS2812B LEDs on GPIO_0
+    // Write outputs to WS2812B LEDs on GPIO_0 // Everything here is still in testing
     out32(gpio_0_outputs, 0);
     sleep(4);
-    int i = 0;
-    while (1){
-//        out32(gpio_0_outputs, 0);
-//        sleep(1);
-        for (i = 0; i < 3; i++)
-        {
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
 
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-        }
-//        for (i = 0; i < 10000; i++)
+//    int i, j;
+//    for(i=0;i<4;i++)
+//    {
+//        for(j=0;j<4;j++)
 //        {
+////            printf("%d\t",*prt);
+////            prt++;
+//        }
+//        puts("\n");
+//    }
+
+    //setLED(Ptr->north.right);
+
+//    int i = 0;
+//    for(i=0;i<16;i++)
+//    {
+//        printf("%d\t",*prt);
+//        prt++;
+//    }
+
+//    while (1){
+////        out32(gpio_0_outputs, 0);
+////        sleep(1);
+//        for (i = 0; i < 3; i++)
+//        {
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+//
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
 //            out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
 //        }
-    }
+//      for (i = 0; i < 10000; i++)
+//      {
+//          out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//      }
+//    }
 };
 
-void daySequence(void)
+void *daySequence(void *data)
 {
-    switch(intersection.seqState)
+    struct intersection *Ptr = (struct intersection*) data;
+
+    switch(Ptr->seqState)
     {   //           North                                       South
         //           East                                        West
         //           Straight    Left    Right    Pedestrian     Straight    Left    Right    Pedestrian
         // Safe start
         case initial:
             setState(red,        red,    red,     red,           red,        red,    red,     red,
-                     red,        red,    red,     red,           red,        red,    red,     red);      intersection.seqState = day1;  break;
+                     red,        red,    red,     red,           red,        red,    red,     red,   &Ptr); Ptr->seqState = day1;  break;
         // NS start
         case day1:
             setState(red,        red,    green,   red,           red,        red,    green,   red,
-                     red,        green,  red,     red,           red,        green,  red,     red);      intersection.seqState = day2;  break;
+                     red,        green,  red,     red,           red,        green,  red,     red,   &Ptr); Ptr->seqState = day2;  break;
         case day2:
             setState(red,        red,    yellow,  red,           red,        red,    yellow,  red,
-                     red,        yellow, red,     red,           red,        yellow, red,     red);      intersection.seqState = day3;  break;
+                     red,        yellow, red,     red,           red,        yellow, red,     red,   &Ptr); Ptr->seqState = day3;  break;
         case day3:
             setState(red,        red,    off,     red,           red,        red,    off,     red,
-                     red,        red,    red,     green,         red,        red,    red,     green);    intersection.seqState = day4;  break;
+                     red,        red,    red,     green,         red,        red,    red,     green, &Ptr); Ptr->seqState = day4;  break;
         case day4:
             setState(green,      green,  off,     red,           green,      green,  off,     red,
-                     red,        red,    red,     green,         red,        red,    red,     green);    intersection.seqState = day5;  break;
+                     red,        red,    red,     green,         red,        red,    red,     green, &Ptr); Ptr->seqState = day5;  break;
         case day5:
             setState(yellow,     yellow, off,     red,           yellow,     yellow, off,     red,
-                     red,        red,    red,     flashing,      red,        red,    red,     flashing); intersection.seqState = day6;  break;
+                     red,        red,    red,     flashing,      red,        red,    red,     flashing, &Ptr); Ptr->seqState = day6;  break;
         case day6:
             setState(red,        red,    red,     red,           red,        red,    red,     red,
-                     red,        red,    red,     red,           red,        red,    red,     red);      intersection.seqState = day7;  break;
+                     red,        red,    red,     red,           red,        red,    red,     red,   &Ptr); Ptr->seqState = day7;  break;
         // EW start
         case day7:
             setState(red,        green,  red,     red,           red,        green,  red,     red,
-                     red,        red,    green,   red,           red,        red,    green,   red);      intersection.seqState = day8;  break;
+                     red,        red,    green,   red,           red,        red,    green,   red,   &Ptr); Ptr->seqState = day8;  break;
         case day8:
             setState(red,        yellow, red,     red,           red,        yellow, red,     red,
-                     red,        red,    yellow,  red,           red,        red,    yellow,  red);      intersection.seqState = day9;  break;
+                     red,        red,    yellow,  red,           red,        red,    yellow,  red,   &Ptr); Ptr->seqState = day9;  break;
         case day9:
             setState(red,        red,    red,     green,         red,        red,    red,     green,
-                     red,        red,    off,     red,           red,        red,    off,     red);      intersection.seqState = day10; break;
+                     red,        red,    off,     red,           red,        red,    off,     red,   &Ptr); Ptr->seqState = day10; break;
         case day10:
             setState(red,        red,    red,     green,         red,        red,    red,     green,
-                     green,      green,  off,     red,           green,      green,  off,     red);      intersection.seqState = day11; break;
+                     green,      green,  off,     red,           green,      green,  off,     red,   &Ptr); Ptr->seqState = day11; break;
         case day11:
             setState(red,        red,    red,     green,         red,        red,    red,     green,
-                     green,      green,  off,     red,           green,      green,  off,     red);      intersection.seqState = day12; break;
+                     green,      green,  off,     red,           green,      green,  off,     red,   &Ptr); Ptr->seqState = day12; break;
         case day12:
             setState(red,        red,    red,     red,           red,        red,    red,     red,
-                     red,        red,    red,     red,           red,        red,    red,     red);      intersection.seqState = day1; break;
-        default:      intersection.seqState = initial;
+                     red,        red,    red,     red,           red,        red,    red,     red,   &Ptr); Ptr->seqState = day1; break;
+        default: Ptr->seqState = initial;
     }
+
+    return 0;
 };
 
-void nightSequence(void)
+void *nightSequence(void *data)
 {
-    switch(intersection.seqState)
+
+    struct intersection *Ptr = (struct intersection*) data;
+
+    switch(Ptr->seqState)
     {   //           North                                       South
         //           East                                        West
         //           Straight    Left    Right    Pedestrian     Straight    Left    Right    Pedestrian
         // Safe start
         case initial:
             setState(red,        red,    red,     red,           red,        red,    red,     red,
-                     red,        red,    red,     red,           red,        red,    red,     red);      intersection.seqState = night4;  break;
+                     red,        red,    red,     red,           red,        red,    red,     red,   &Ptr);  Ptr->seqState = night4;  break;
         // NS start
         case night4:
             setState(green,      green,  off,     red,           green,      green,  off,     red,
-                     red,        red,    red,     green,         red,        red,    red,     green);    intersection.seqState = night5;  break;
+                     red,        red,    red,     green,         red,        red,    red,     green, &Ptr);  Ptr->seqState = night5;  break;
         case night5:
             setState(yellow,     yellow, off,     red,           yellow,     yellow, off,     red,
-                     red,        red,    red,     flashing,      red,        red,    red,     flashing); intersection.seqState = night6;  break;
+                     red,        red,    red,     flashing,      red,        red,    red,     flashing, &Ptr); Ptr->seqState = night6;  break;
         case night6:
             setState(red,        red,    red,     red,           red,        red,    red,     red,
-                     red,        red,    red,     red,           red,        red,    red,     red);      intersection.seqState = night10;  break;
+                     red,        red,    red,     red,           red,        red,    red,     red,   &Ptr);  Ptr->seqState = night10;  break;
         // EW start
         case night10:
             setState(red,        red,    red,     green,         red,        red,    red,     green,
-                     green,      green,  off,     red,           green,      green,  off,     red);      intersection.seqState = night11; break;
+                     green,      green,  off,     red,           green,      green,  off,     red,   &Ptr);  Ptr->seqState = night11; break;
         case night11:
             setState(red,        red,    red,     green,         red,        red,    red,     green,
-                     green,      green,  off,     red,           green,      green,  off,     red);      intersection.seqState = night12; break;
+                     green,      green,  off,     red,           green,      green,  off,     red,   &Ptr);  Ptr->seqState = night12; break;
         case night12:
             setState(red,        red,    red,     red,           red,        red,    red,     red,
-                     red,        red,    red,     red,           red,        red,    red,     red);      intersection.seqState = night4; break;
-        default:      intersection.seqState = initial;
+                     red,        red,    red,     red,           red,        red,    red,     red,   &Ptr);  Ptr->seqState = night4; break;
+        default: Ptr->seqState = initial;
     }
+    return 0;
 };
 
