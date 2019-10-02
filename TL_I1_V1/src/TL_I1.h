@@ -35,7 +35,7 @@ void setState(int northStraight, int northLeft,int northRight, int northPedestri
 
 /// For Threads
 void extCommunication(void);
-void gpioController(void);
+void *gpioController(void *data);
 void *daySequence(void *data);
 void *nightSequence(void *data);
 
