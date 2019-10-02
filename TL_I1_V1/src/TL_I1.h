@@ -8,6 +8,11 @@
 #ifndef TL_I1_H_
 #define TL_I1_H_
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h> // Used for sleep()
+#include <pthread.h>
+
 enum lightState     {red, yellow, green, off, disabled, flashing};
 enum sequenceState  {initial, day1, day2, day3, day4,   day5,   day6, day7, day8, day9, day10,   day11,   day12,
                                                 night4, night5, night6,                 night10, night11, night12};
@@ -38,5 +43,6 @@ void extCommunication(void);
 void *gpioController(void *data);
 void *daySequence(void *data);
 void *nightSequence(void *data);
+void *commandLineInputThread(void *data);
 
 #endif /* TL_I1_H_ */
