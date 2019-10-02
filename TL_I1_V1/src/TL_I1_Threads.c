@@ -75,9 +75,18 @@ void *gpioController(void *data) // This function will crash if not on real DE10
     out32(gpio_0_outputs, 0);
     sleep(4);
 
+
+
     int *pointer = &*Ptr;
     int i;
-    for(i = 0; i < 16; i++)
+
+//    for (i=0;i<1000;i++)
+//    {
+//        out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+//    }
+
+
+    for(i = 0; i < 5; i++)
     {
         switch(*pointer)
         {
@@ -112,32 +121,32 @@ void *gpioController(void *data) // This function will crash if not on real DE10
                 break;
             case 1:
                 printf("YELLOW ");
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);  // Green
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);  // RED
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);  // Green  ‭10111111‬
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
 
                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);   // BLUE
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);  // RED
                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // BLUE
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
                 break;
             case 2:
                 printf("GREEN ");
@@ -166,9 +175,38 @@ void *gpioController(void *data) // This function will crash if not on real DE10
                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2
-                        ); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
                 break;
+            case 3:
+                 printf("OFF ");
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // GREEN
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // RED
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // BLUE
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                 break;
+
         }
         pointer++;
     }
@@ -181,53 +219,53 @@ void *daySequence(void *data)
     struct intersection *Ptr = (struct intersection*) data; // Cast void data to intersection struct
 
     switch(Ptr->seqState)
-    {   //           North                                       South
-        //           East                                        West
-        //           Straight    Left    Right    Pedestrian     Straight    Left    Right    Pedestrian
-        // Safe start
-        case initial:
-            setState(red,        red,    red,     red,           red,        red,    red,     red,
-                     red,        red,    red,     red,           red,        red,    red,     red,   &Ptr); Ptr->seqState = day1;  break;
-        // NS start
-        case day1:
-            setState(red,        red,    green,   red,           red,        red,    green,   red,
-                     red,        green,  red,     red,           red,        green,  red,     red,   &Ptr); Ptr->seqState = day2;  break;
-        case day2:
-            setState(red,        red,    yellow,  red,           red,        red,    yellow,  red,
-                     red,        yellow, red,     red,           red,        yellow, red,     red,   &Ptr); Ptr->seqState = day3;  break;
-        case day3:
-            setState(red,        red,    off,     red,           red,        red,    off,     red,
-                     red,        red,    red,     green,         red,        red,    red,     green, &Ptr); Ptr->seqState = day4;  break;
-        case day4:
-            setState(green,      green,  off,     red,           green,      green,  off,     red,
-                     red,        red,    red,     green,         red,        red,    red,     green, &Ptr); Ptr->seqState = day5;  break;
-        case day5:
-            setState(yellow,     yellow, off,     red,           yellow,     yellow, off,     red,
-                     red,        red,    red,     flashing,      red,        red,    red,     flashing, &Ptr); Ptr->seqState = day6;  break;
-        case day6:
-            setState(red,        red,    red,     red,           red,        red,    red,     red,
-                     red,        red,    red,     red,           red,        red,    red,     red,   &Ptr); Ptr->seqState = day7;  break;
-        // EW start
-        case day7:
-            setState(red,        green,  red,     red,           red,        green,  red,     red,
-                     red,        red,    green,   red,           red,        red,    green,   red,   &Ptr); Ptr->seqState = day8;  break;
-        case day8:
-            setState(red,        yellow, red,     red,           red,        yellow, red,     red,
-                     red,        red,    yellow,  red,           red,        red,    yellow,  red,   &Ptr); Ptr->seqState = day9;  break;
-        case day9:
-            setState(red,        red,    red,     green,         red,        red,    red,     green,
-                     red,        red,    off,     red,           red,        red,    off,     red,   &Ptr); Ptr->seqState = day10; break;
-        case day10:
-            setState(red,        red,    red,     green,         red,        red,    red,     green,
-                     green,      green,  off,     red,           green,      green,  off,     red,   &Ptr); Ptr->seqState = day11; break;
-        case day11:
-            setState(red,        red,    red,     green,         red,        red,    red,     green,
-                     green,      green,  off,     red,           green,      green,  off,     red,   &Ptr); Ptr->seqState = day12; break;
-        case day12:
-            setState(red,        red,    red,     red,           red,        red,    red,     red,
-                     red,        red,    red,     red,           red,        red,    red,     red,   &Ptr); Ptr->seqState = day1; break;
-        default: Ptr->seqState = initial;
-    }
+        {   //           North                                                         South
+            //           East                                                          West
+            //           Pedestrian1  Left     Straight     Right    Pedestrian2       Pedestrian1  Left      Straight     Right    Pedestrian2
+            // Safe start
+            case initial:
+                setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
+                         red,         red,     red,         red,     red,              red,         red,      red,         red,     red,       &Ptr); Ptr->seqState = day1;  break;
+            // NS start
+            case day1:
+                setState(red,         red,     red,         green,   red,              red,         red,      red,         green,   red,
+                         red,         green,   red,         red,     red,              red,         green,    red,         red,     red,       &Ptr); Ptr->seqState = day2;  break;
+            case day2:
+                setState(red,         red,     red,         yellow,  red,              red,         red,      red,         yellow,  red,
+                         red,         yellow,  red,         red,     red,              red,         yellow,   red,         red,     red,       &Ptr); Ptr->seqState = day3;  break;
+            case day3:
+                setState(red,         red,     red,         off,     red,              red,         red,      red,         off,     red,
+                         green,       red,     red,         red,     green,            green,       red,      red,         red,     green,     &Ptr); Ptr->seqState = day4;  break;
+            case day4:
+                setState(red,         green,   green,       off,     red,              red,         green,    green,       off,     red,
+                         green,       red,     red,         red,     green,            green,       red,      red,         red,     green,     &Ptr); Ptr->seqState = day5;  break;
+            case day5:
+                setState(red,         yellow,  yellow,      off,     red,              red,         yellow,   yellow,      off,     red,
+                         flashing,    red,     red,         red,     flashing,         flashing,    red,      red,         red,     flashing,  &Ptr); Ptr->seqState = day6;  break;
+            case day6:
+                setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
+                         red,         red,     red,         red,     red,              red,         red,      red,         red,     red,       &Ptr); Ptr->seqState = day7;  break;
+            // EW start
+            case day7:
+                setState(red,         green,   red,         red,     red,              red,         green,    red,         red,     red,
+                         red,         red,     red,         green,   red,              red,         red,      red,         green,   red,       &Ptr); Ptr->seqState = day8;  break;
+            case day8:
+                setState(red,         yellow,  red,         red,     red,              red,         yellow,   red,         red,     red,
+                         red,         red,     red,         yellow,  red,              red,         red,      red,         yellow,  red,       &Ptr); Ptr->seqState = day9;  break;
+            case day9:
+                setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
+                         red,         red,     red,         off,     red,              red,         red,      red,         off,     red,       &Ptr); Ptr->seqState = day10; break;
+            case day10:
+                setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
+                         red,         green,   green,       off,     red,              red,         green,    green,       off,     red,       &Ptr); Ptr->seqState = day11; break;
+            case day11:
+                setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
+                         red,         green,   green,       off,     red,              red,         green,    green,       off,     red,       &Ptr); Ptr->seqState = day12; break;
+            case day12:
+                setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
+                         red,         red,     red,         red,     red,              red,         red,      red,         red,     red,       &Ptr); Ptr->seqState = day1; break;
+            default: Ptr->seqState = initial;
+        }
 
     return 0;
 };
@@ -238,35 +276,35 @@ void *nightSequence(void *data)
     struct intersection *Ptr = (struct intersection*) data; // Cast void data to intersection struct
 
     switch(Ptr->seqState)
-    {   //           North                                       South
-        //           East                                        West
-        //           Straight    Left    Right    Pedestrian     Straight    Left    Right    Pedestrian
-        // Safe start
-        case initial:
-            setState(red,        red,    red,     red,           red,        red,    red,     red,
-                     red,        red,    red,     red,           red,        red,    red,     red,   &Ptr);  Ptr->seqState = night4;  break;
-        // NS start
-        case night4:
-            setState(green,      green,  off,     red,           green,      green,  off,     red,
-                     red,        red,    red,     green,         red,        red,    red,     green, &Ptr);  Ptr->seqState = night5;  break;
-        case night5:
-            setState(yellow,     yellow, off,     red,           yellow,     yellow, off,     red,
-                     red,        red,    red,     flashing,      red,        red,    red,     flashing, &Ptr); Ptr->seqState = night6;  break;
-        case night6:
-            setState(red,        red,    red,     red,           red,        red,    red,     red,
-                     red,        red,    red,     red,           red,        red,    red,     red,   &Ptr);  Ptr->seqState = night10;  break;
-        // EW start
-        case night10:
-            setState(red,        red,    red,     green,         red,        red,    red,     green,
-                     green,      green,  off,     red,           green,      green,  off,     red,   &Ptr);  Ptr->seqState = night11; break;
-        case night11:
-            setState(red,        red,    red,     green,         red,        red,    red,     green,
-                     green,      green,  off,     red,           green,      green,  off,     red,   &Ptr);  Ptr->seqState = night12; break;
-        case night12:
-            setState(red,        red,    red,     red,           red,        red,    red,     red,
-                     red,        red,    red,     red,           red,        red,    red,     red,   &Ptr);  Ptr->seqState = night4; break;
-        default: Ptr->seqState = initial;
-    }
+        {   //           North                                                 South
+            //           East                                                  West
+            //           Pedestrian1  Left     Straight  Right    Pedestrian2  Pedestrian1  Left     Straight   Right    Pedestrian2
+            // Safe start
+            case initial:
+                setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
+                         red,         red,     red,      red,     red,        red,          red,     red,       red,     red,        &Ptr);  Ptr->seqState = night4;  break;
+            // NS start
+            case night4:
+                setState(red,         green,   green,    off,     red,        red,          green,   green,     off,     red,
+                         green,       red,     red,      red,     green,      green,        red,     red,       red,     green,      &Ptr);  Ptr->seqState = night5;  break;
+            case night5:
+                setState(red,         yellow,  yellow,   off,     red,        red,          yellow,  yellow,    off,     red,
+                         flashing,    red,     red,      red,     flashing,   flashing,     red,     red,       red,     flashing,   &Ptr); Ptr->seqState = night6;  break;
+            case night6:
+                setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
+                         red,         red,     red,      red,     red,        red,          red,     red,       red,     red,        &Ptr);  Ptr->seqState = night10;  break;
+            // EW start
+            case night10:
+                setState(green,       red,     red,      red,     green,      green,        red,     red,       red,     green,
+                         red,         green,   green,    off,     red,        red,          green,   green,     off,     red,        &Ptr);  Ptr->seqState = night11; break;
+            case night11:
+                setState(green,       red,     red,      red,     green,      green,        red,     red,       red,     green,
+                         red,         green,   green,    off,     red,        red,          green,   green,     off,     red,        &Ptr);  Ptr->seqState = night12; break;
+            case night12:
+                setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
+                         red,         red,     red,      red,     red,        red,          red,     red,       red,     red,        &Ptr);  Ptr->seqState = night4; break;
+            default: Ptr->seqState = initial;
+        }
     return 0;
 };
 
