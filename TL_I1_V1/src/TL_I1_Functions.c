@@ -36,3 +36,12 @@ void setState(int northStraight, int northLeft,int northRight, int northPedestri
     //    printf("Function %d\n",(*Ptr)->seqState);
 };
 
+//Converts strings into hash numbers for switch statementss
+unsigned long hash(char *str) {
+    unsigned long hash = 5381;
+    int c;
+
+    while ((c = *str++))
+        hash = ((hash << 5) + hash) + c;
+    return hash;
+}

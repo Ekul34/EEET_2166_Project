@@ -37,6 +37,7 @@ struct intersection
 
 /// For functions
 void setState(int northStraight, int northLeft,int northRight, int northPedestrian, int southStraight, int southLeft, int southRight, int southPedestrian, int eastStraight,  int eastLeft,  int eastRight,  int eastPedestrian,int westStraight,  int westLeft,  int westRight,  int westPedestrian, void *data);
+unsigned long hash(char *str);
 
 /// For Threads
 void extCommunication(void);

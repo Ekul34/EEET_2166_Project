@@ -25,6 +25,10 @@
 #define GPIO_0_BASE         0xFF200040  //(GPIO_0 - JP1 header - 16 bits wide - Output only)
 #define SWITCHES_BASE       0xFF200060  //(Switches - 4 bits wide - Inputs only)
 
+//string defines for input switch statement
+#define q                   177686
+#define d                   177673
+#define n                   177683
 
 void extCommunication(void)
 {
@@ -267,16 +271,28 @@ void *nightSequence(void *data)
 };
 
 void* commandLineInputThread(void* data){
-    char buffer[256];
+    char *buffer[256];
 
     while(true){
-        scanf("%s",&buffer);//
+        scanf("%s",buffer);//
 
-        if(!strcmp(&buffer, "q")){
-            printf("Quitting thread\n");
-            pthread_cancel(pthread_self()); //kills itself
-        } else {
-            printf("%s\n",buffer);
+        //printf("%s as hash: %i\n",buffer, hash(buffer));
+        switch(hash(buffer)){
+            case q:
+                printf("Quitting thread\n");
+                pthread_cancel(pthread_self()); //kills itself
+                break;
+            case d:
+                printf("Starting day sequence\n");
+
+                break;
+            case n:
+                printf("Starting night sequence\n");
+
+                break;
+            default:
+                printf("Input not a command\n");
+                break;
         }
     }
 };
