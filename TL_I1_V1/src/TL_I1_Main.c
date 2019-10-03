@@ -2,18 +2,15 @@
 //  Author1: Luke Ballantyne
 //  Last Edited: 28/9/2019
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "TL_I1.h"
-#include <pthread.h>
-#include <unistd.h> // Used for sleep()
-
 
 int main(void) {
 	puts("Intersection 1 has started");
 
-	pthread_t  daySequenceID, gpioControllerID; // Storage thread IDs, used for joins ect ect
+	pthread_t daySequenceID, gpioControllerID, commandLineInputID; // Storage thread IDs, used for joins ect ect
 	struct intersection intersection = {{red}}; // Create intersection struct of type intersection
+
+	pthread_create(&commandLineInputID, NULL, commandLineInputThread, NULL);
 
 	int i;
 	for(i = 0; i < 12; i++)

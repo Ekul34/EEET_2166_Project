@@ -5,11 +5,11 @@
  *      Author: LukeT, TimD
  */
 #include "TL_I1.h"
-#include <unistd.h> // Used for sleep()
+
+#include <stdbool.h>
+#include <string.h>
 
 // Includes for hardware "gpioController()"
-#include <stdlib.h>
-#include <stdio.h>
 #include <hw/inout.h>      // for in32() and out32();
 #include <sys/mman.h>      // for mmap_device_io();
 #include <sys/neutrino.h>  // for ThreadCtl( _NTO_TCTL_IO_PRIV , NULL);
@@ -264,4 +264,19 @@ void *nightSequence(void *data)
             default: Ptr->seqState = initial;
         }
     return 0;
+};
+
+void* commandLineInputThread(void* data){
+    char buffer[256];
+
+    while(true){
+        scanf("%s",&buffer);//
+
+        if(!strcmp(&buffer, "q")){
+            printf("Quitting thread\n");
+            pthread_cancel(pthread_self()); //kills itself
+        } else {
+            printf("%s\n",buffer);
+        }
+    }
 };
