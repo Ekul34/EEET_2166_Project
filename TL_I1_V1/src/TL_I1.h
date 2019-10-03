@@ -31,7 +31,11 @@ struct intersection
 
 
 /// For functions
-void setState(int northStraight, int northLeft,int northRight, int northPedestrian, int southStraight, int southLeft, int southRight, int southPedestrian, int eastStraight,  int eastLeft,  int eastRight,  int eastPedestrian,int westStraight,  int westLeft,  int westRight,  int westPedestrian, void *data);
+void setState(int northPedestrian1, int northLeft, int northStraight, int northRight, int northPedestrian2,
+              int southPedestrian1, int southLeft, int southStraight, int southRight, int southPedestrian2,
+              int eastPedestrian2,  int eastStraight,  int eastLeft,  int eastRight,  int eastPedestrian2,
+              int westStraight,  int westLeft,  int westRight,  int westPedestrian,
+              void *data);
 
 /// For Threads
 void extCommunication(void);
