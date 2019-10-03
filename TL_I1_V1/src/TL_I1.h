@@ -19,10 +19,11 @@ enum sequenceState  {initial, day1, day2, day3, day4,   day5,   day6, day7, day8
                           // Night sequences 4,5,6 and 10,11,12 are equal with the same day sequences numbers
 struct light
 {
-    enum lightState straight;
+    enum lightState pedestrian1;
     enum lightState left;
+    enum lightState straight;
     enum lightState right;
-    enum lightState pedestrian;
+    enum lightState pedestrian2;
 };
 
 struct intersection
@@ -38,8 +39,8 @@ struct intersection
 /// For functions
 void setState(int northPedestrian1, int northLeft, int northStraight, int northRight, int northPedestrian2,
               int southPedestrian1, int southLeft, int southStraight, int southRight, int southPedestrian2,
-              int eastPedestrian2,  int eastStraight,  int eastLeft,  int eastRight,  int eastPedestrian2,
-              int westStraight,  int westLeft,  int westRight,  int westPedestrian,
+              int eastPedestrian1,  int eastLeft,  int eastStraight,  int eastRight,  int eastPedestrian2,
+              int westPedestrian1,  int westLeft,  int westStraight,  int westRight,  int westPedestrian2,
               void *data);
 
 /// For Threads

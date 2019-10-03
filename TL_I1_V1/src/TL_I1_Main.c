@@ -13,7 +13,7 @@ int main(void) {
 	pthread_create(&commandLineInputID, NULL, commandLineInputThread, NULL);
 
 	int i;
-	for(i = 0; i < 12; i++)
+	for(i = 0; i < 14; i++)
 	{
 	    printf("State = %d\n",intersection.seqState);
         pthread_create (&gpioControllerID, NULL, gpioController, &intersection);    // Uncomment to run on DE10, will terminate on VM
@@ -22,7 +22,7 @@ int main(void) {
 	    pthread_create (&daySequenceID, NULL, daySequence, &intersection);
 	    pthread_join(daySequenceID,NULL);
         printf("State = %d\n",intersection.seqState);
-        sleep(1);
+       // sleep(1);
 	}
 
     puts("\nIntersection 1 has finished");
