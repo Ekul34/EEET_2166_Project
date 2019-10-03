@@ -33,23 +33,22 @@ struct intersection
     struct light east;
     struct light west;
     enum sequenceState seqState;
-};
+}intersection;
 
 
 /// For functions
 void setState(int northPedestrian1, int northLeft, int northStraight, int northRight, int northPedestrian2,
               int southPedestrian1, int southLeft, int southStraight, int southRight, int southPedestrian2,
               int eastPedestrian1,  int eastLeft,  int eastStraight,  int eastRight,  int eastPedestrian2,
-              int westPedestrian1,  int westLeft,  int westStraight,  int westRight,  int westPedestrian2,
-              void *data);
+              int westPedestrian1,  int westLeft,  int westStraight,  int westRight,  int westPedestrian2);
 unsigned long hash(char *str);
 
 
 /// For Threads
 void extCommunication(void);
-void *gpioController(void *data);
-void *daySequence(void *data);
-void *nightSequence(void *data);
-void *commandLineInputThread(void *data);
+void *gpioController(void);
+void *daySequence(void);
+void *nightSequence(void);
+void *commandLineInputThread(void);
 
 #endif /* TL_I1_H_ */
