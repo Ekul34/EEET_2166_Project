@@ -40,14 +40,25 @@ void setState(int northPedestrian1, int northLeft, int northStraight, int northR
     //    printf("Function %d\n",intersection.seqState);
     //    intersection.seqState = 3;
     //    printf("Function %d\n",intersection.seqState);
-};
-
-//Converts strings into hash numbers for switch statementss
-unsigned long hash(char *str) {
-    unsigned long hash = 5381;
-    int c;
-
-    while ((c = *str++))
-        hash = ((hash << 5) + hash) + c;
-    return hash;
 }
+
+struct light getLightStruct(char directionChar){
+	switch((int)directionChar){
+	case N:
+    	return intersection.north;
+		break;
+	case S:
+    	return intersection.south;
+		break;
+	case E:
+    	return intersection.east;
+		break;
+	case W:
+    	return intersection.west;
+		break;
+	}
+
+	struct light l;
+	return l;
+}
+

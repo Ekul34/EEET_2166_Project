@@ -25,24 +25,6 @@
 #define GPIO_0_BASE         0xFF200040  //(GPIO_0 - JP1 header - 16 bits wide - Output only)
 #define SWITCHES_BASE       0xFF200060  //(Switches - 4 bits wide - Inputs only)
 
-//string defines for input switch statement
-#define B                   66
-#define Q                   81
-#define D                   68
-#define N                   78
-#define O                   79
-#define A                   65
-#define T                   84
-#define F                   70
-#define S                   83
-#define E                   69
-#define W                   87
-#define R                   82
-#define Y                   89
-#define G                   71
-#define L                   76
-#define P                   80
-
 // Thread IDs
 pthread_t daySequenceID, nightSequenceID;
 
@@ -348,7 +330,9 @@ void* commandLineInputThread(void){
             case N:
             	if((int)buffer[1] != 0){
             		intersectionMode.north.straight = manual;
-            		intersection.north.straight = green;
+            		struct light lightSelection = getLightStruct(buffer[1]);
+            		lightSelection.straight = green;
+            		//intersection.north.straight = green;
             	} else {
                     printf("Starting night sequence\n");
                     pthread_cancel(&daySequenceID);
