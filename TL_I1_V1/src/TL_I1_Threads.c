@@ -26,9 +26,22 @@
 #define SWITCHES_BASE       0xFF200060  //(Switches - 4 bits wide - Inputs only)
 
 //string defines for input switch statement
-#define q                   177686
-#define d                   177673
-#define n                   177683
+#define B                   66
+#define Q                   81
+#define D                   68
+#define N                   78
+#define O                   79
+#define A                   65
+#define T                   84
+#define F                   70
+#define S                   83
+#define E                   69
+#define W                   87
+#define R                   82
+#define Y                   89
+#define G                   71
+#define L                   76
+#define P                   80
 
 // Thread IDs
 pthread_t daySequenceID, nightSequenceID;
@@ -318,21 +331,38 @@ void* commandLineInputThread(void){
     while(true){
         scanf("%s",buffer);//
 
-        //printf("%s as hash: %i\n",buffer, hash(buffer));
-        switch(hash(buffer)){
-            case q:
+        printf("%s as int: %i\n",buffer, (int)buffer);
+        printf("%c as int: %i\n",buffer[0], (int)buffer[0]);
+        printf("%c as int: %i\n",buffer[1], (int)buffer[1]);
+
+        switch((int)buffer[0]){
+            case Q:
                 printf("Quitting thread\n");
                 pthread_cancel(pthread_self()); //kills itself
                 break;
-            case d:
+            case D:
                 printf("Starting day sequence\n");
                 pthread_create (&daySequenceID, NULL, daySequence, NULL);
                 break;
-            case n:
+            case N:
                 printf("Starting night sequence\n");
                 pthread_create (&nightSequenceID, NULL, daySequence, NULL);
+                break;
+            case B:
+                printf("Boom Gate Failure\n");
 
                 break;
+            case S:
+                printf("Traffic Light - South\n");
+
+                break;
+            case E:
+                printf("Traffic Light - East\n");
+
+                break;
+            case W:
+                printf("Traffic Light - West\n");
+
             default:
                 printf("Input not a command\n");
                 break;
