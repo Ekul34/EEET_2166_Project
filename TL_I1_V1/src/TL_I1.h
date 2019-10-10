@@ -13,7 +13,8 @@
 #include <unistd.h> // Used for sleep()
 #include <pthread.h>
 
-enum lightState     {red, yellow, green, off, disabled, flashing};
+enum lightState     {red, yellow, green, off, flashing};
+enum mode     {automatic, manual};
 enum sequenceState  {initial, day1, day2, day3, day4,   day5,   day6, day7, day8, day9, day10,   day11,   day12,
                                                 night4, night5, night6,                 night10, night11, night12};
                           // Night sequences 4,5,6 and 10,11,12 are equal with the same day sequences numbers
@@ -34,6 +35,32 @@ struct intersection
     struct light west;
     enum sequenceState seqState;
 }intersection;
+
+
+struct lightMode
+{
+    enum mode pedestrian1;
+    enum mode left;
+    enum mode straight;
+    enum mode right;
+    enum mode pedestrian2;
+};
+
+struct intersectionMode
+{
+    struct lightMode north;
+    struct lightMode south;
+    struct lightMode east;
+    struct lightMode west;
+}intersectionMode;
+
+
+
+
+
+
+
+
 
 
 /// For functions

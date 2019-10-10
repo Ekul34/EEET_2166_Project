@@ -326,14 +326,14 @@ void *nightSequence(void)
 };
 
 void* commandLineInputThread(void){
-    char *buffer[256];
+    char buffer[256];
 
     while(true){
         scanf("%s",buffer);//
 
-        printf("%s as int: %i\n",buffer, (int)buffer);
-        printf("%c as int: %i\n",buffer[0], (int)buffer[0]);
-        printf("%c as int: %i\n",buffer[1], (int)buffer[1]);
+        printf("%c,",buffer[0]);
+        printf("%c,",buffer[1]);
+        printf("%c.\n",buffer[2]);
 
         switch((int)buffer[0]){
             case Q:
@@ -342,11 +342,19 @@ void* commandLineInputThread(void){
                 break;
             case D:
                 printf("Starting day sequence\n");
+                pthread_cancel(&nightSequenceID);
                 pthread_create (&daySequenceID, NULL, daySequence, NULL);
                 break;
             case N:
-                printf("Starting night sequence\n");
-                pthread_create (&nightSequenceID, NULL, daySequence, NULL);
+            	if((int)buffer[1] != 0){
+            		intersectionMode.north.straight = manual;
+            		intersection.north.straight = green;
+            	} else {
+                    printf("Starting night sequence\n");
+                    pthread_cancel(&daySequenceID);
+                    pthread_create (&nightSequenceID, NULL, daySequence, NULL);
+            	}
+
                 break;
             case B:
                 printf("Boom Gate Failure\n");

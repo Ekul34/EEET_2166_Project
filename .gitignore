@@ -66,4 +66,8 @@ translations/*.qm
 # IDE settings
 .settings/
 
+.metadata/*
+
+192.*
+
 # End of https://www.gitignore.io/api/c,momentics
