@@ -315,7 +315,7 @@ void* commandLineInputThread(void){
 
         printf("%c,",buffer[0]);
         printf("%c,",buffer[1]);
-        printf("%c.\n",buffer[2]);
+        printf("%c\n",buffer[2]);
 
         switch((int)buffer[0]){
             case Q:
@@ -329,10 +329,7 @@ void* commandLineInputThread(void){
                 break;
             case N:
             	if((int)buffer[1] != 0){
-            		intersectionMode.north.straight = manual;
-            		struct light lightSelection = getLightStruct(buffer[1]);
-            		lightSelection.straight = green;
-            		//intersection.north.straight = green;
+            		setLight(buffer);
             	} else {
                     printf("Starting night sequence\n");
                     pthread_cancel(&daySequenceID);
@@ -345,16 +342,13 @@ void* commandLineInputThread(void){
 
                 break;
             case S:
-                printf("Traffic Light - South\n");
-
+        		setLight(buffer);
                 break;
             case E:
-                printf("Traffic Light - East\n");
-
+        		setLight(buffer);
                 break;
             case W:
-                printf("Traffic Light - West\n");
-
+        		setLight(buffer);
             default:
                 printf("Input not a command\n");
                 break;
