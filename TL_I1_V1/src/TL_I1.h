@@ -77,7 +77,12 @@ void setState(int northPedestrian1, int northLeft, int northStraight, int northR
               int southPedestrian1, int southLeft, int southStraight, int southRight, int southPedestrian2,
               int eastPedestrian1,  int eastLeft,  int eastStraight,  int eastRight,  int eastPedestrian2,
               int westPedestrian1,  int westLeft,  int westStraight,  int westRight,  int westPedestrian2);
+void blockSouth(void);
+void unblockSouth(void);
+void blockNorth(void);
+void unblockNorth(void);
 void setLight(char buffer[256]);
+
 
 /// For Threads
 void extCommunication(void);

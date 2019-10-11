@@ -35,12 +35,46 @@ void setState(int northPedestrian1, int northLeft, int northStraight, int northR
     if(intersectionMode.west.left == automatic) intersection.west.left        = westLeft;
     if(intersectionMode.west.right == automatic) intersection.west.right       = westRight;
     if(intersectionMode.west.pedestrian2 == automatic) intersection.west.pedestrian2  = westPedestrian2;
-
-    // Uncomment incase of debug
-    //    printf("Function %d\n",intersection.seqState);
-    //    intersection.seqState = 3;
-    //    printf("Function %d\n",intersection.seqState);
 }
+
+void blockSouth(void)
+{
+	intersectionMode.west.right = manual;
+	intersection.west.right = red;
+
+	intersectionMode.north.straight = manual;
+	intersection.north.straight = red;
+
+	intersectionMode.east.left = manual;
+	intersection.east.left = red;
+};
+
+void blockNorth(void)
+{
+	intersectionMode.east.right = manual;
+	intersection.east.right = red;
+
+	intersectionMode.south.straight = manual;
+	intersection.south.straight = red;
+
+	intersectionMode.west.left = manual;
+	intersection.west.left = red;
+};
+
+void unblockSouth(void)
+{
+	intersectionMode.west.right = automatic;
+	intersectionMode.north.straight = automatic;
+	intersectionMode.east.left = automatic;
+};
+
+void unblockNorth(void)
+{
+	intersectionMode.east.right = automatic;
+	intersectionMode.south.straight = automatic;
+	intersectionMode.west.left = automatic;
+
+};
 
 void setLight(char buffer[256]){
 	int *ptr;
