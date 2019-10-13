@@ -19,19 +19,42 @@
 #define CLIENTCOMS_H_
 	int serverPID;
 	int serverCHID;
+#define BUF_SIZE 100
+
+typedef struct
+{
+	struct _pulse hdr; // Our real data comes after this header
+	int ClientID; // our data (unique id from client)
+    int data;     // our data
+} my_data;
+
+typedef struct
+{
+	struct _pulse hdr; // Our real data comes after this header
+    char buf[BUF_SIZE];// Message we send back to clients to tell them the messages was processed correctly.
+} my_reply;
+
+typedef struct
+{
+	int data1;//serverPID
+	int data2;//serverCHID
+} input_data;
 
 
 //pass in host name to construct directory
-int Client_sttach(string hostname)
+int Client_sttach(string hostname,string filename)
 {
+	char hostname[]="EAf46089";
+	char filename[]="server.info";
 	FILE *fptr;
 	int serverPID;
 	int serverCHID;
 
-	string dir[50]="/net/";
-	String dir2[50]="/tmp/file/serverData.info";
+	char dir[]="/net/";
+	char dir2[]="/tmp/file/";
 	strcat(dir,hostname);
 	strcat(dir,dir2);
+	strcat(dir,filename);
 
 
 	   if ((fptr = fopen(dir,"r")) == NULL)

@@ -7,7 +7,7 @@
 #include <sys/iofunc.h>
 //written functions
 //#include <ClientComs.h>
-#include <ServerComs.h>
+//#include <ServerComs.h>
 
 #define BUF_SIZE 100
 #define Buffer_size 1
