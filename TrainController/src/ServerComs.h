@@ -8,9 +8,9 @@
 #ifndef SERVERCOMS_H_
 #define SERVERCOMS_H_
 
-//pass host name as string when calling function
+//pass hostname and fileneame with extension as string when calling function
 
-int CreateFile(string hostname)
+int CreateFile(string hostname,string filename)
 {
 	int serverPID=0, chid=0; 	// Server PID and channel ID
 		int num;
@@ -31,9 +31,10 @@ int CreateFile(string hostname)
 		printf("  --> Channel ID   : %d \n\n", chid);
 
 		string dir[50]="/net/";
-		String dir2[50]="/tmp/file/serverData.info";
+		String dir2[50]="/tmp/file/";
 		strcat(dir,hostname);
 		strcat(dir,dir2);
+		strcat(dir,filename);
 
 		fptr = fopen(dir,"w");
 
@@ -142,6 +143,19 @@ int CreateFile(string hostname)
 
 }
 
+void DeleteFile(string hostname, string filename)
+{
+	string dir[50]="/net/";
+	String dir2[50]="/tmp/file/";
+	strcat(dir,hostname);
+	strcat(dir,dir2);
+	strcat(dir,filename);
+	int remove( const char * filename );
+    if( remove( filename ) ) {
+        printf( "Error removing %s",filename );
+
+    }
+}
 
 
 #endif /* SERVERCOMS_H_ */
