@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <sys/iofunc.h>
 //written functions
-#include <ClientComs.h>
+//#include <ClientComs.h>
 #include <ServerComs.h>
 
 #define BUF_SIZE 100
