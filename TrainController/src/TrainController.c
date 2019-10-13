@@ -5,11 +5,32 @@
 #include <mqueue.h>
 #include <errno.h>
 #include <sys/iofunc.h>
+//written functions
+#include <ClientComs.h>
+#include <ServerComs.h>
 
 #define BUF_SIZE 100
 #define Buffer_size 1
 
-char message[5]={""};
+#define B                   66
+#define Q                   81
+#define D                   68
+#define N                   78
+#define O                   79
+#define A                   65
+#define T                   84
+#define F                   70
+#define S                   83
+#define E                   69
+#define W                   87
+#define R                   82
+#define Y                   89
+#define G                   71
+#define L                   76
+#define P                   80
+
+
+char message[256]={""};
 int messageready = 0;
 
 typedef struct
@@ -57,15 +78,15 @@ void message_from_x1()
 	//using mqueue or something to get the state and store in variable
 	//psudo code
 
-/*	if(strcmp(message_from_x1,"s")==0)
+/*	if(strcmp(message_from_x1,"3T")==0)//Error
 	{
 
 	}
-	else if(strcmp(message_from_x1,"TEF")==0)
+	else if(strcmp(message_from_x1,"3F")==0)//Error
 	{
 
 	}
-	else if(strcmp(message_from_x1,"TWF")==0)
+	else if(strcmp(message_from_x1,"TET")==0)
 	{
 
 	}
@@ -87,6 +108,8 @@ void message_from_x1()
 	}*/
 	//
 }
+
+
 
 /*** Server code ***/
 void *server(void *Not_used)
@@ -237,7 +260,7 @@ void *UserInterface(void *Not_used)
 					printf("--> 2.Talk to traffic light Controller\n");
 					printf("--> 3.Logout\n");
 					printf("--> 4.help\n");
-					scanf("%d",&option1);
+					scanf("%d",&option1);//this is where niks code would go
 					switch(option1)
 					{
 						case 1:
@@ -262,7 +285,7 @@ void *UserInterface(void *Not_used)
 								if(option1_2 == 1)
 								{
 									printf("Closing boom gate\n");
-									strcpy(message, "BF"); //mutex lock this
+									strcpy(message, "3BF"); //mutex lock this
 									messageready = 1; //mutex this which will be read by another thread to send the message
 									printf("Sending message");
 									break;
@@ -270,7 +293,7 @@ void *UserInterface(void *Not_used)
 								else if(option1_2 == 2)
 								{
 									printf("Opening boom gate\n");
-									strcpy(message, "BT"); //mutex lock this
+									strcpy(message, "3BT"); //mutex lock this
 									messageready = 1; //mutex this which will be read by another thread to send the message
 									break;
 								}
@@ -378,7 +401,17 @@ void *UserInterface(void *Not_used)
 							break;
 					}
 			}
+			//TC to X1 messages
+				int options5_1;
+				switch (options5_1)
+				{
+				case 1:
+					printf("")
+				}
 }
+
+
+
 
 int main(int argc, char *argv[])
 {
