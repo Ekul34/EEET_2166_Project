@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "stdint.h"
@@ -12,6 +13,9 @@
 #include <sys/neutrino.h>  // for ThreadCtl( _NTO_TCTL_IO_PRIV , NULL)
 #include <sched.h>
 #include <sys/procmgr.h>
+#include <string.h>
+
+//#include <cstring.h>
 
 #define AM335X_CONTROL_MODULE_BASE   (uint64_t) 0x44E10000
 #define AM335X_CONTROL_MODULE_SIZE   (size_t)   0x00001448
@@ -90,10 +94,6 @@ void delaySCL();
 uint32_t KeypadReadIObit(uintptr_t gpio_base, uint32_t BitsToRead);
 int DecodeKeyValue(uint32_t word);
 
-int synchronized = 1;
-
-
-
 typedef struct
 {
 	int count_thread;
@@ -138,49 +138,235 @@ typedef struct
 
 } LCD_connect;
 
+int synchronized = 1;
+char message[256] = "";//will have to make it global variable and read write lock it
+int messageready = 0;
+int option1 = 0;
+int input_finish = 1;
 
-void *Flash_LED0_ex(void *notused)
-{
-	pthread_detach(pthread_self());  // no need for this thread to join
-	uintptr_t gpio1_port = mmap_device_io(AM335X_GPIO_SIZE, AM335X_GPIO1_BASE);
 
-	uintptr_t val;
-	// Write GPIO data output register
-	val  = in32(gpio1_port + GPIO_DATAOUT);
-	val |= (LED0|LED1|LED2|LED3);
-	out32(gpio1_port + GPIO_DATAOUT, val);
-
-	usleep(100000);  // 100 ms wait
-	//sched_yield();  // if used without the usleep, this line will flash the LEDS for ~4ms
-
-	val  = in32(gpio1_port + GPIO_DATAOUT);
-	val &= ~(LED0|LED1|LED2|LED3);
-	out32(gpio1_port + GPIO_DATAOUT, val);
-
-	munmap_device_io(gpio1_port, AM335X_GPIO_SIZE);
-
-}
-
-void *LCDthread_A_ex (void *data)
+void *A_Options (void *data)
 {
 	LCD_connect *td = (LCD_connect*) data;
-	uint8_t	LCDdata[10] = {};
-
-
-	for(;;)
+	uint8_t	LCDdataA[15] = {};
+	while(1)
 	{
 		if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
+		// write some Text to the LCD screen
+		SetCursor(td->fd, td->Address,0,0); // set cursor on LCD to first position first line
+		sprintf(LCDdataA,"1,2            ");
+		I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdataA[0], sizeof(LCDdataA));		// write new data to I2C
+		if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
+
+		//wait for input
+		//int option1;
+		//scanf("%d",&option1); //replace with scank
+		//option1 = scank(gpio1_base);
+
+		while(input_finish)
+		{
+			usleep(100);
+		}
+		input_finish = 1;
+
+		if(option1 == 1 || option1 == 2)
+		{
+			sprintf(message,"%d",option1);
+			printf("Currently constructed message =%s\n", message);
+			fflush(stdout);
+			if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
 			// write some Text to the LCD screen
 			SetCursor(td->fd, td->Address,0,0); // set cursor on LCD to first position first line
-			sprintf(LCDdata,"A,B,C,D");
-			I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
-		if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
-		usleep(1000000); // 1.0 seconds
+			sprintf(LCDdataA,"N,S,E,W,D,N");
+			I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdataA[0], sizeof(LCDdataA));		// write new data to I2C
+			if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other function
+			option1 = 0;
+			while(input_finish)
+			{
+				usleep(100);
+			}
+			input_finish = 1;
+
+			switch(option1)
+			{
+				case 1:
+				strcat(message,"N");
+				printf("Currently constructed message =%s\n", message);
+				break;
+				case 2:
+				strcat(message,"S");
+				printf("Currently constructed message =%s\n", message);
+				break;
+				case 3:
+				strcat(message,"E");
+				printf("Currently constructed message =%s\n", message);
+				break;
+				case 4:
+				strcat(message,"W");
+				printf("Currently constructed message =%s\n", message);
+				break;
+				case 5:
+				strcat(message,"D");
+				printf("Currently constructed message =%s\n", message);
+				break;
+				case 6:
+				strcat(message,"N");
+				printf("Currently constructed message =%s\n", message);
+				break;
+				default:
+				break;
+			}
+
+			if(option1 == 1 || option1 == 2 || option1 == 3 || option1 == 4)
+			{
+				if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
+				// write some Text to the LCD screen
+				SetCursor(td->fd, td->Address,0,0); // set cursor on LCD to first position first line
+				sprintf(LCDdataA,"S,L,R,P     ");
+				I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdataA[0], sizeof(LCDdataA));		// write new data to I2C
+				if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other function
+				fflush(stdout);
+
+
+				option1 = 0;
+				while(input_finish)
+				{
+					usleep(100);
+				}
+				input_finish = 1;
+
+				switch(option1)
+				{
+					case 1:
+					strcat(message, "S");
+					printf("Currently constructed message =%s\n", message);
+					break;
+					case 2:
+					strcat(message,"L");
+					printf("Currently constructed message =%s\n", message);
+					break;
+					case 3:
+					strcat(message,"R");
+					printf("Currently constructed message =%s\n", message);
+					break;
+					case 4:
+					strcat(message,"P");
+					printf("Currently constructed message =%s\n", message);
+					break;
+					default:
+					break;//need to change for error checking
+
+				}
+				if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
+				// write some Text to the LCD screen
+				SetCursor(td->fd, td->Address,0,0); // set cursor on LCD to first position first line
+				sprintf(LCDdataA,"R,Y,G,O,A      ");
+				I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdataA[0], sizeof(LCDdataA));		// write new data to I2C
+				if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other function
+
+				option1 = 0;
+				while(input_finish)
+				{
+					usleep(100);
+				}
+				input_finish = 1;
+
+				switch(option1)
+				{
+					case 1:
+						strcat(message,"R");
+						printf("Currently constructed message =%s\n", message);
+						puts(message);
+						break;
+					case 2:
+						strcat(message,"Y");
+						printf("Currently constructed message =%s\n", message);
+						break;
+					case 3:
+						strcat(message,"G");
+						printf("Currently constructed message =%s\n", message);
+						break;
+					case 4:
+						strcat(message,"O");
+						printf("Currently constructed message =%s\n", message);
+						break;
+					case 5:
+						strcat(message,"F");
+						printf("Currently constructed message =%s\n", message);
+						break;
+					default:
+						break;
+				}
+				if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
+				// write some Text to the LCD screen
+				SetCursor(td->fd, td->Address,0,0); // set cursor on LCD to first position first line
+				sprintf(LCDdataA,"%s:Y,N", message);
+				I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdataA[0], sizeof(LCDdataA));		// write new data to I2C
+				if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other function
+
+
+				option1 = 0;
+				while(input_finish)
+				{
+					usleep(100);
+				}
+				input_finish = 1;
+
+				if(option1 == 1)
+				{
+					messageready = 1;
+					printf("Sending Message = %s\n", message);
+					fflush(stdout);
+				}
+				else if(option1 == 2)
+				{
+					printf("Message canceled\n");
+					fflush(stdout);
+				}
+				else
+				{
+					printf("Message canceled\n");
+					fflush(stdout);
+				}
+			}//end of north south east west
+
+			else if(option1 == 5 || option1 == 6) //night time or day time operation
+			{
+				if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
+				// write some Text to the LCD screen
+				SetCursor(td->fd, td->Address,0,0); // set cursor on LCD to first position first line
+				sprintf(LCDdataA,"kdsjfnk       ");
+				I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdataA[0], sizeof(LCDdataA));		// write new data to I2C
+				if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other function
+
+				option1 = 0;
+				while(input_finish)
+				{
+					usleep(100);
+				}
+				input_finish = 1;
+
+				if(option1 == 1)
+				{
+					int messageready = 1;
+					printf("Message sent\n");
+					fflush(stdout);
+				}
+				else
+				{
+					printf("Message canceled\n");
+					fflush(stdout);
+				}
+			}
+			else break;
+		}
+		else;
 	}
 	return 0;
+
 }
 
-void *LCDI1_state_display (void *data)
+void *B_I1_state_display (void *data)
 {
 	//use top left 5 bit to display the state
 
@@ -213,7 +399,7 @@ void *LCDI1_state_display (void *data)
 	return 0;
 }
 
-void *LCDI2_state_display (void *data)
+void *D_I2_state_display (void *data)
 {
 	LCD_connect *td = (LCD_connect*) data;
 	uint8_t	LCDdata[5] = {};
@@ -243,9 +429,9 @@ void *LCDI2_state_display (void *data)
 }
 
 
-void *keypad_input (void *data)
+void *C_keypad_input (void *data)
 {
-	uintptr_t control_module = mmap_device_io(AM335X_CONTROL_MODULE_SIZE,
+		uintptr_t control_module = mmap_device_io(AM335X_CONTROL_MODULE_SIZE,
 		AM335X_CONTROL_MODULE_BASE);
 		uintptr_t gpio1_base = mmap_device_io(AM335X_GPIO_SIZE , AM335X_GPIO1_BASE);
 		if( (control_module)&&(gpio1_base) )// if mapped then
@@ -299,7 +485,6 @@ void *keypad_input (void *data)
 		int id = 0; // Attach interrupt Event to IRQ for GPIO1B (upper 16 bits of port)
 		id = InterruptAttachEvent (GPIO1_IRQ, &event, _NTO_INTR_FLAGS_TRK_MSK);
 		// Main code starts here
-		printf( "Waiting For Interrupt 99 - key press on Jaycar (XC4602) keypad\n");
 
 
 		for(;;) // dummy for loop that detects if a key press event has occurred
@@ -328,18 +513,33 @@ void *keypad_input (void *data)
 				//printf("word=%u\n",word); // debug code
 
 				int keypad_value = DecodeKeyValue(word);
-				//int keypad_value = 15;
-				printf("keypad value = %lu, word = %lu\n", keypad_value, word);
 
 				//fflush(stdout);
-				 if(keypad_value < 16)
-				 {
+				if(keypad_value == 13)
+				{
+					return 0;
+				}
+				else if(keypad_value < 16)
+				{
 					LCD_connect *td = (LCD_connect*) data;
-					uint8_t	LCDdata[4] = {};
+					uint8_t	LCDdata[15] = {};
 					if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
 					// write some Text to the LCD screen
 					SetCursor(td->fd, td->Address,1,0); // set cursor on LCD to first position first line
-					sprintf(LCDdata,"=>%d",keypad_value);
+					sprintf(LCDdata,"=>%d             ",keypad_value);
+					I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
+					if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
+					option1 = keypad_value;
+				 }
+				 else if(keypad_value == 16)
+				 {
+					 input_finish = 0;
+					 LCD_connect *td = (LCD_connect*) data;
+					uint8_t	LCDdata[15] = {};
+					if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
+					// write some Text to the LCD screen
+					SetCursor(td->fd, td->Address,1,0); // set cursor on LCD to first position first line
+					sprintf(LCDdata,"               ");
 					I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
 					if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
 				 }
@@ -367,9 +567,6 @@ int main(int argc, char *argv[])
 	volatile uint8_t LCDi2cAdd = 0x3C;
 	_Uint32t speed = 10000; // nice and slow (will work with 200000)
 	LCD_connect td;
-
-	uint8_t	LCDdata[21] = {};
-
 	// Create the mutex
 	pthread_mutex_init(&td.mutex,NULL);		// pass NULL as the attr parameter to use the default attributes for the mutex
 
@@ -394,23 +591,6 @@ int main(int argc, char *argv[])
 
 
 
-	//keypad set up
-
-
-
-
-	//keypad set up end
-
-
-
-
-
-
-
-
-
-
-
 	// launch threads
 	pthread_t  th1, th2, th4, th5;
 	pthread_mutex_lock(&td.mutex);		//lock the function to make sure the variables are protected
@@ -419,17 +599,18 @@ int main(int argc, char *argv[])
 	td.mode   = DATA_SEND;
     pthread_mutex_unlock(&td.mutex);	//unlock the functions to release the variables for use by other functions
 
-	pthread_create (&th1, NULL, LCDthread_A_ex, &td);
-	pthread_create (&th2, NULL, LCDI1_state_display, &td);
-	pthread_create (&th4, NULL, LCDI2_state_display, &td);
-	pthread_create (&th5, NULL, keypad_input, &td);
+	pthread_create (&th1, NULL, A_Options, &td);
+	pthread_create (&th2, NULL, B_I1_state_display, &td);
+	pthread_create (&th4, NULL, D_I2_state_display, &td);
+	pthread_create (&th5, NULL, C_keypad_input, &td);
 
-	pthread_join (th4, NULL); // wait for fastest thread to finish
+	pthread_join (th5, NULL); // wait for fastest thread to finish
+
 
 	//Destroy the mutex
 	pthread_mutex_destroy(&td.mutex);
 
-	printf("\n complete");
+	printf("\nMin terminating........");
 	return EXIT_SUCCESS;
 }
 
@@ -610,7 +791,7 @@ int DecodeKeyValue(uint32_t word)
 	case 0x00:  // key release event (do nothing)
 		//return 21;
 	default:
-		printf("Key pressed could not be determined - %lu\n", word);
+		//printf("Key pressed could not be determined - %lu\n", word);
 		return 21;
 
 	}
@@ -628,3 +809,27 @@ void strobe_SCL(uintptr_t gpio_port_add) {
    out32(gpio_port_add + GPIO_DATAOUT, PortData);
    delaySCL();
 }
+
+
+
+//void *Flash_LED0_ex(void *notused)
+//{
+//	pthread_detach(pthread_self());  // no need for this thread to join
+//	uintptr_t gpio1_port = mmap_device_io(AM335X_GPIO_SIZE, AM335X_GPIO1_BASE);
+//
+//	uintptr_t val;
+//	// Write GPIO data output register
+//	val  = in32(gpio1_port + GPIO_DATAOUT);
+//	val |= (LED0|LED1|LED2|LED3);
+//	out32(gpio1_port + GPIO_DATAOUT, val);
+//
+//	usleep(100000);  // 100 ms wait
+//	//sched_yield();  // if used without the usleep, this line will flash the LEDS for ~4ms
+//
+//	val  = in32(gpio1_port + GPIO_DATAOUT);
+//	val &= ~(LED0|LED1|LED2|LED3);
+//	out32(gpio1_port + GPIO_DATAOUT, val);
+//
+//	munmap_device_io(gpio1_port, AM335X_GPIO_SIZE);
+//
+//}
