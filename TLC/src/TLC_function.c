@@ -227,8 +227,9 @@ void printhelp()
 	printf("\n\n\n\n..............This is a help menu................\n");
 	printf("To select an option select number then press 16 to enter\n");
 	printf("Keypad 13 is logout\n");
+	printf("Option explained\n");
 	printf("Intersection(1,2)\tDirection(N,S,E,W)\tLight(S,L,R,P)\tColour(R,Y,G),Off(O),Automatic(A)\n");
-	printf("\t\t\tSequence(D,N)\n");
+	printf("\t\t\tSequence(D,N)\n\n");
 	printf("When :Y,N comes, press 1 for yes and others for no\n");
 	printf("Username is admin\n");
 	printf("Password is password\n");
