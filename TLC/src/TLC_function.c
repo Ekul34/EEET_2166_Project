@@ -130,79 +130,79 @@ uint32_t KeypadReadIObit(uintptr_t gpio_base, uint32_t BitsToRead)  {
 int DecodeKeyValue(uint32_t word)
 {
 	int val;
-	switch(word)
-	{
-	case 0x01:
-		printf("Key  1 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		val = 1;
-		return val;
-	case 0x02:
-		printf("Key  2 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 2;
-	case 0x04:
-		printf("Key  3 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 3;
-	case 0x08:
-		printf("Key  4 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 4;
-	case 0x10:
-		printf("Key  5 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 5;
-	case 0x20:
-		printf("Key  6 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 6;
-	case 0x40:
-		printf("Key  7 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 7;
-	case 0x80:
-		printf("Key  8 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 8;
-	case 0x100:
-		printf("Key  9 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 9;
-	case 0x200:
-		printf("Key 10 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 10;
-	case 0x400:
-		printf("Key 11 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 11;
-	case 0x800:
-		printf("Key 12 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 12;
-	case 0x1000:
-		printf("Key 13 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 13;
-	case 0x2000:
-		printf("Key 14 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 14;
-	case 0x4000:
-		printf("Key 15 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		return 15;
-	case 0x8000:
-		printf("Key 16 pressed\n");
-		//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
-		usleep(1); // do this so we only fire once
-		return 16;
-	case 0x00:  // key release event (do nothing)
-		//return 21;
-	default:
-		printf("Key pressed could not be determined - %lu\n", word);
-		return 21;
+		switch(word)
+		{
+		case 0x01:
+			////printf("Key   1 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			val = 1;
+			return val;
+		case 0x02:
+			////printf("Key   2 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 2;
+		case 0x04:
+			////printf("Key   3 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 3;
+		case 0x08:
+			////printf("Key   4 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 4;
+		case 0x10:
+			////printf("Key   5 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 5;
+		case 0x20:
+			////printf("Key   6 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 6;
+		case 0x40:
+			////printf("Key   7 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 7;
+		case 0x80:
+			////printf("Key   8 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 8;
+		case 0x100:
+			////printf("Key   9 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 9;
+		case 0x200:
+			//printf("Key  10 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 10;
+		case 0x400:
+			//printf("Key  11 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 11;
+		case 0x800:
+			//printf("Key  12 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 12;
+		case 0x1000:
+			//printf("Key  13 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 13;
+		case 0x2000:
+			//printf("Key  14 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 14;
+		case 0x4000:
+			//printf("Key  15 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			return 15;
+		case 0x8000:
+			//printf("Key  16 pressed\n");
+			//pthread_create(NULL, NULL, Flash_LED0_ex, NULL); // flash LED
+			usleep(1); // do this so we only fire once
+			return 16;
+		case 0x00:  // key release event (do nothing)
+			//return 21;
+		default:
+			//printf("Key  pressed could not be determined - %lu\n", word);
+			return 21;
 
 	}
 }
@@ -227,6 +227,8 @@ void printhelp()
 	printf("\n\n\n\n..............This is a help menu................\n");
 	printf("To select an option select number then press 16 to enter\n");
 	printf("Keypad 13 is logout\n");
+	printf("Intersection(1,2)\tDirection(N,S,E,W)\tLight(S,L,R,P)\tColour(R,Y,G),Off(O),Automatic(A)\n");
+	printf("\t\t\tSequence(D,N)\n");
 	printf("When :Y,N comes, press 1 for yes and others for no\n");
 	printf("Username is admin\n");
 	printf("Password is password\n");

@@ -114,7 +114,6 @@ typedef struct
 ISR_data ISR_area_data;
 
 
-
 typedef struct
 {
 	int fd;
