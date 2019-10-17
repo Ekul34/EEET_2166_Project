@@ -232,11 +232,10 @@ void *sequence(void)
     }
     return 0;
 };
+bool isError = false;
 
 void* commandLineInputThread(void){
     char buffer[256];
-
-    bool isError = false;
 
     while(true){
     	scanf("%s",buffer);//
@@ -265,7 +264,7 @@ void* commandLineInputThread(void){
 
 				break;
 			default:
-				printf("Input not a command\n");
+				//printf("Input not a command\n");
 				break;
 		}
     }
@@ -290,6 +289,7 @@ void *ServerReceive(void) {
 		replymsg.hdr.subtype = 0x00;
 
        while (1) {
+    	   //sleep(1);
            rcvid = MsgReceive(attach->chid, &ReceiveBuff, sizeof(ReceiveBuff), NULL);
 
            if (rcvid == -1) {/* Error condition, exit */
@@ -314,7 +314,7 @@ void *ServerReceive(void) {
            }
 
            if (msg.hdr.type == _IO_CONNECT ) {
-               MsgReply(rcvid, crossing.seqState, NULL, 0 );
+               MsgReply(rcvid, crossing.boomGate, NULL, 0 );
                continue;
            }
 
@@ -322,7 +322,9 @@ void *ServerReceive(void) {
                MsgError( rcvid, ENOSYS );
                continue;
            }
-		   sprintf(replymsg.buf, "%d", crossing.seqState);
+		   sprintf(replymsg.buf, "%s", crossing.boomGate ? "T" : "F");
+
+		   //printf("%s", crossing.boomGate ? "T" : "F");
 
            //printf("Server received %s \n", ReceiveBuff);
 
@@ -330,21 +332,29 @@ void *ServerReceive(void) {
 
            /***COMMANDS*/
            	switch((int)ReceiveBuff[0]){
-				case Q:
-					printf("Quitting thread\n");
-					pthread_cancel(pthread_self()); //kills itself
-					break;
-				case S:
-					printf("Starting sequence\n");
-					pthread_create(&sequenceID, NULL, sequence, NULL);
-					break;
-				case E:
+           	case Q:
+				printf("Quitting thread\n");
+				pthread_cancel(pthread_self()); //kills itself
+				break;
+           	case T:
+           		if(!isError){
 					crossingMode.crossing = manual;
-					setState(true, true);
-					break;
-				default:
-					printf("Input not a command\n");
-					break;
+					crossing.boomGate = true;
+					crossing.trainLight = true;
+					isError = true;
+				}
+           		break;
+           	case F:
+				if(isError){
+					crossingMode.crossing = automatic;
+					crossing.boomGate = false;
+					crossing.trainLight = true;
+					isError = false;
+				}
+				break;
+			default:
+				//printf("Input not a command\n");
+				break;
 			}
        }
 

@@ -1,5 +1,12 @@
-#ifndef TX_H_
-#define TX_H_
+/*
+ * TL_I1.h
+ *
+ *  Created on: 29Sep.,2019
+ *      Author: LukeT
+ */
+
+#ifndef TL_I1_H_
+#define TL_I1_H_
 
 //string defines for input switch statement
 #define B                   66
@@ -38,25 +45,50 @@
 #include <sys/iofunc.h>
 
 #define BUF_SIZE 256
-#define ATTACH_POINT "TX_1" //attach point
+#define ATTACH_POINT "TLC_2" //attach point
 
 int gpio_inputVal;
+enum lightState     {red, yellow, green, off, flashing};
 enum mode     {automatic, manual};
-enum sequenceState  {bGClosed, bGOpen, error};
-
-struct crossing
+enum sequenceState  {initial, day1, day2, day3, day4,   day5,   day6, day7, day8, day9, day10,   day11,   day12,
+                                                night4, night5, night6,                 night10, night11, night12};
+                          // Night sequences 4,5,6 and 10,11,12 are equal with the same day sequences numbers
+struct light
 {
-    bool trainLight;
-    bool boomGate;
+    enum lightState pedestrian1;
+    enum lightState left;
+    enum lightState straight;
+    enum lightState right;
+    enum lightState pedestrian2;
+};
+
+struct intersection
+{
+    struct light north;
+    struct light west;
+    struct light south;
+    struct light east;
     enum sequenceState seqState;
-}crossing;
+}intersection;
 
 pthread_rwlock_t GPIO_Lock;
 
-struct crossingMode
+struct lightMode
 {
-    enum mode crossing;
-}crossingMode;
+    enum mode pedestrian1;
+    enum mode left;
+    enum mode straight;
+    enum mode right;
+    enum mode pedestrian2;
+};
+
+struct intersectionMode
+{
+    struct lightMode north;
+    struct lightMode south;
+    struct lightMode east;
+    struct lightMode west;
+}intersectionMode;
 
 typedef union
 {
@@ -78,5 +110,4 @@ typedef struct
     char buf[BUF_SIZE];// Message we send back to clients to tell them the messages was processed correctly.
 } my_reply;
 
-
-#endif /* TX_H_ */
+#endif /* TL_I1_H_ */
