@@ -69,6 +69,7 @@ const struct sigevent* Inthandler( void* area, int id )
 
 
 pthread_mutex_t mutex1;
+pthread_cond_t condvar = PTHREAD_COND_INITIALIZER;
 
 int synchronized = 1;
 char message[256] = "";//will have to make it global variable and read write lock it
@@ -95,6 +96,7 @@ void *LCD_A_options (void *data)
 
 		while(input_finish)
 		{
+			pthread_cond_wait(&condvar, &mutex1);
 			usleep(100);
 		}
 
@@ -327,7 +329,7 @@ void *LCD_A_options (void *data)
 
 				if(option1 == 1)
 				{
-					int messageready = 1;
+					messageready = 1;
 					printf("Message sending\n");
 					fflush(stdout);
 				}
@@ -564,6 +566,7 @@ void *LCD_C_keypad (void *data)
 
 				pthread_mutex_lock(&mutex1);
 				option1 = keypad_value;
+				pthread_cond_signal(&condvar);
 				pthread_mutex_unlock(&mutex1);
 			 }
 			 else if(keypad_value == 16)
@@ -659,6 +662,35 @@ void *ServerReceive(void *data) {
 }
 
 
+void *messagesending(void *Not_used)
+{
+	char messagetosendi1[256] = "";
+	char messagetosendi2[256] = "";
+
+	while(1)
+	{
+		while(messageready)
+		{
+			if(message[0] == '1')
+			{
+				memcpy(messagetosendi1, &message[1], 255);
+				printf("Message sent to i1 %s\n", messagetosendi1);
+			}
+			else if(message[0] == '2')
+			{
+				memcpy(messagetosendi2, &message[1], 255);
+				printf("Message sent to i2 %s\n", messagetosendi2);
+			}
+			fflush(stdout);
+			messageready = 0;
+
+		}
+		//printf("No message\n");
+		usleep(100);
+	}
+
+
+}
 
 int main(int argc, char *argv[])
 {
@@ -706,19 +738,18 @@ int main(int argc, char *argv[])
 
 
 	pthread_create (&th1, NULL, LCD_A_options, &td);
-	//pthread_create (&th2, NULL, LCD_B_I1_states, &td);
+	////pthread_create (&th2, NULL, LCD_B_I1_states, &td);
+	pthread_create (&th2, NULL, messagesending, NULL);
 	pthread_create (&th4, NULL, LCD_D_I2_states, &td);
 	pthread_create (&th6, NULL, ServerReceive, &td);
 	while(1)
 	{
-		char username[] = "";
-		char correctuser[]="admin";
-		char passwordd[]="";
-		char correctpass[]="password";
 		int tries=0;
 		int left=0;
 		while(1)
 		{
+			char username[255] = "";
+			char correctuser[255]="admin";
 			printf(".......Please enter login details.......\n");
 			printf("\nUser name: ");
 			fflush(stdout);
@@ -737,6 +768,8 @@ int main(int argc, char *argv[])
 		}//end username while loop
 		while(1)
 		{
+			char passwordd[255]="";
+			char correctpass[255]="password";
 			printf("Please Enter Password here: ");
 			fflush(stdout);
 			if(tries>=10)
