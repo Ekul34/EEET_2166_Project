@@ -11,7 +11,7 @@ void setState(int northPedestrian1, int northLeft, int northStraight, int northR
               int eastPedestrian1,  int eastLeft,  int eastStraight,  int eastRight,  int eastPedestrian2,
               int westPedestrian1,  int westLeft,  int westStraight,  int westRight,  int westPedestrian2)
 {
-	pthread_rwlock_wrlock(&GPIO_Lock);
+	//pthread_rwlock_wrlock(&GPIO_Lock);
 
 	if(intersectionMode.north.pedestrian1 == automatic) intersection.north.pedestrian1	= northPedestrian1;
     if(intersectionMode.north.left == automatic) intersection.north.left     = northLeft;
@@ -37,7 +37,7 @@ void setState(int northPedestrian1, int northLeft, int northStraight, int northR
     if(intersectionMode.west.right == automatic) intersection.west.right       = westRight;
     if(intersectionMode.west.pedestrian2 == automatic) intersection.west.pedestrian2  = westPedestrian2;
 
-	pthread_rwlock_unlock(&GPIO_Lock);
+	//pthread_rwlock_unlock(&GPIO_Lock);
 }
 
 void blockSouth(void)

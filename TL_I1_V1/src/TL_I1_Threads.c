@@ -54,9 +54,9 @@ void *pulseTimerSetup(void){
 	}
 
 	// setup the timer (1.5s initial delay value, 1.5s reload interval)
-	itime.it_value.tv_sec = 1;			  // 1 second
+	itime.it_value.tv_sec = 2;			  // 1 second
 	itime.it_value.tv_nsec = 500000000;    // 500 million nsecs = .5 secs
-	itime.it_interval.tv_sec = 1;          // 1 second
+	itime.it_interval.tv_sec = 2;          // 1 second
 	itime.it_interval.tv_nsec = 500000000; // 500 million nsecs = .5 secs
 
 	// and start the timer!
@@ -72,6 +72,7 @@ void gpioSetup(void)
 
 void *gpioController(void) // This function will crash if not on real DE10 hardware
 {
+    printf("Initialising\n");
     // code that controls the LED GPIO pin based on the current values in the struct
     // code that that reads car and pedestrian (maybe in a different thread?)
 
@@ -100,6 +101,8 @@ void *gpioController(void) // This function will crash if not on real DE10 hardw
     // Write outputs to WS2812B LEDs on GPIO_0 // Everything here is still in testing
     out32(gpio_0_outputs, 0);
     sleep(4);
+
+    printf("Initialisation finished\n");
 
     int *pointer = &intersection.north.pedestrian1;
     int i;
@@ -148,8 +151,8 @@ void *gpioController(void) // This function will crash if not on real DE10 hardw
                 case 1:
                     printf("YELLOW ");
                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);  // Green  ‭10111111‬
                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
@@ -413,4 +416,71 @@ void* commandLineInputThread(void){
                 break;
         }
     }
+};
+
+void *ServerReceive(void) {
+
+       name_attach_t *attach;
+       char ReceiveBuff[BUF_SIZE]="";
+       my_data_t msg;
+       int rcvid;
+
+       if ((attach = name_attach(NULL, ATTACH_POINT, 0)) == NULL) {
+           printf("Couldnt attach to receive from client \n");
+           return 0;
+       }
+
+		rcvid=0;
+		int msgnum=0;  	// no message received yet
+		int Stay_alive=0, living=0;	// server stays running (ignores _PULSE_CODE_DISCONNECT request)
+
+		my_reply replymsg; 			// replymsg structure for sending back to client
+		replymsg.hdr.type = 0x01;
+		replymsg.hdr.subtype = 0x00;
+
+       while (1) {
+           rcvid = MsgReceive(attach->chid, &ReceiveBuff, sizeof(ReceiveBuff), NULL);
+
+           if (rcvid == -1) {/* Error condition, exit */
+               break;
+           }
+
+           if (rcvid == 0) {/* Pulse received */
+               switch (msg.hdr.code) {
+               case _PULSE_CODE_DISCONNECT:
+
+                   ConnectDetach(msg.hdr.scoid);
+                   break;
+               case _PULSE_CODE_UNBLOCK:
+
+                   break;
+               default:
+                   printf("Controller Disconnected!\n");
+
+                   break;
+               }
+               continue;
+           }
+
+           if (msg.hdr.type == _IO_CONNECT ) {
+               MsgReply(rcvid, intersection.seqState, NULL, 0 );
+               continue;
+           }
+
+           if (msg.hdr.type > _IO_BASE && msg.hdr.type <= _IO_MAX ) {
+               MsgError( rcvid, ENOSYS );
+               continue;
+           }
+		   sprintf(replymsg.buf, "%d", intersection.seqState);
+
+
+           printf("Server received %s \n", ReceiveBuff);
+           MsgReply(rcvid, EOK, &replymsg, sizeof(replymsg));
+
+       }
+
+       /* Remove the name from the space */
+       name_detach(attach, 0);
+
+       return EXIT_SUCCESS;
 };

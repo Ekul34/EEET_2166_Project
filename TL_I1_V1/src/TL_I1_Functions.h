@@ -21,5 +21,4 @@ void blockNorth(void);
 void unblockNorth(void);
 void setLight(char buffer[256]);
 
-
 #endif /* TL_I1_FUNCTIONS_H_ */

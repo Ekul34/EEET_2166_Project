@@ -29,5 +29,6 @@ void *commandLineInputThread(void);
 
 //pulse timer setup thread
 void *pulseTimerSetup(void);
+void *ServerReceive(void);
 
 #endif /* TL_I1_THREADS_H_ */
