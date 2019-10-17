@@ -45,7 +45,7 @@
 #include <sys/iofunc.h>
 
 #define BUF_SIZE 256
-#define ATTACH_POINT "TLC__1" //attach point
+#define ATTACH_POINT "TLC_1" //attach point
 
 int gpio_inputVal;
 enum lightState     {red, yellow, green, off, flashing};
