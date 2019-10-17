@@ -4,8 +4,8 @@
  *  Created on: 29Sep.,2019
  *      Author: LukeT, TimD
  */
-#include "TL_I1_Threads.h"
-#include "TL_I1_Functions.h"
+#include "TX_Threads.h"
+#include "TX_Functions.h"
 
 // defines for hardware "gpioController()"
 #define PIO_SIZE            0x0000001F

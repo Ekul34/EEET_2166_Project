@@ -1,14 +1,14 @@
 /*
- * TL_I1_Functions.h
+ * TX_Functions.h
  *
  *  Created on: 17Oct.,2019
  *      Author: tsdav
  */
 
-#ifndef TL_I1_FUNCTIONS_H_
-#define TL_I1_FUNCTIONS_H_
+#ifndef TX_FUNCTIONS_H_
+#define TX_FUNCTIONS_H_
 
-#include "TL_I1.h"
+#include "TX.h"
 
 /// For functions
 void setState(int northPedestrian1, int northLeft, int northStraight, int northRight, int northPedestrian2,
@@ -21,4 +21,5 @@ void blockNorth(void);
 void unblockNorth(void);
 void setLight(char buffer[256]);
 
-#endif /* TL_I1_FUNCTIONS_H_ */
+
+#endif /* TX_FUNCTIONS_H_ */

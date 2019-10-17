@@ -1,12 +1,12 @@
 /*
- * TL_I1.h
+ * TX.h
  *
- *  Created on: 29Sep.,2019
- *      Author: LukeT
+ *  Created on: 17Oct.,2019
+ *      Author: tsdav
  */
 
-#ifndef TL_I1_H_
-#define TL_I1_H_
+#ifndef TX_H_
+#define TX_H_
 
 //string defines for input switch statement
 #define B                   66
@@ -97,6 +97,13 @@ typedef union
 /* All of your messages should start with this header */
 typedef struct _pulse msg_header_t;
 
+#define BUF_SIZE 256
+#define ATTACH_POINT "TLC"
+#include <sys/neutrino.h>
+
+/* All of your messages should start with this header */
+typedef struct _pulse msg_header_t;
+
 /* Now your real data comes after this */
 typedef struct _my_data {
         msg_header_t  hdr;
@@ -109,4 +116,5 @@ typedef struct
     char buf[BUF_SIZE];// Message we send back to clients to tell them the messages was processed correctly.
 } my_reply;
 
-#endif /* TL_I1_H_ */
+
+#endif /* TX_H_ */

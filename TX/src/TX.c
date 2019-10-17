@@ -1,9 +1,5 @@
-//  Traffic Light Intersection 1
-//  Author1: Luke Ballantyne
-//  Last Edited: 28/9/2019
-
-#include "TL_I1_Functions.h"
-#include "TL_I1_Threads.h"
+#include "TX_Functions.h"
+#include "TX_Threads.h"
 
 int main(void) {
 	//init read/write lock
