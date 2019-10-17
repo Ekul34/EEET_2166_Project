@@ -26,10 +26,21 @@
 #define L                   76
 #define P                   80
 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h> // Used for sleep()
 #include <pthread.h>
+#include <time.h>
+#include <sys/netmgr.h>
+#include <stdbool.h>
+#include <string.h>
+// Includes for hardware "gpioController()"
+#include <hw/inout.h>      // for in32() and out32();
+#include <sys/mman.h>      // for mmap_device_io();
+#include <sys/neutrino.h>  // for ThreadCtl( _NTO_TCTL_IO_PRIV , NULL);
+#include <stdint.h>        // for unit32 types
+#include <sys/procmgr.h>
 
 enum lightState     {red, yellow, green, off, flashing};
 enum mode     {automatic, manual};
@@ -72,23 +83,11 @@ struct intersectionMode
     struct lightMode west;
 }intersectionMode;
 
-/// For functions
-void setState(int northPedestrian1, int northLeft, int northStraight, int northRight, int northPedestrian2,
-              int southPedestrian1, int southLeft, int southStraight, int southRight, int southPedestrian2,
-              int eastPedestrian1,  int eastLeft,  int eastStraight,  int eastRight,  int eastPedestrian2,
-              int westPedestrian1,  int westLeft,  int westStraight,  int westRight,  int westPedestrian2);
-void blockSouth(void);
-void unblockSouth(void);
-void blockNorth(void);
-void unblockNorth(void);
-void setLight(char buffer[256]);
+typedef union
+{
+	struct _pulse   pulse;
+} timer;
 
 
-/// For Threads
-void extCommunication(void);
-void *gpioController(void);
-void *daySequence(void);
-void *nightSequence(void);
-void *commandLineInputThread(void);
 
 #endif /* TL_I1_H_ */

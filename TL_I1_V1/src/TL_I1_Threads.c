@@ -4,18 +4,8 @@
  *  Created on: 29Sep.,2019
  *      Author: LukeT, TimD
  */
-#include "TL_I1.h"
-
-#include <stdbool.h>
-#include <string.h>
-
-// Includes for hardware "gpioController()"
-#include <hw/inout.h>      // for in32() and out32();
-#include <sys/mman.h>      // for mmap_device_io();
-#include <sys/neutrino.h>  // for ThreadCtl( _NTO_TCTL_IO_PRIV , NULL);
-#include <stdint.h>        // for unit32 types
-#include <string.h>
-#include <sys/procmgr.h>
+#include "TL_I1_Threads.h"
+#include "TL_I1_Functions.h"
 
 // defines for hardware "gpioController()"
 #define PIO_SIZE            0x0000001F
@@ -34,6 +24,46 @@ void extCommunication(void)
     // Send status of LEDs/State
     // receive commands to change  LED | Day | Night | train start | train finish | Boom gate fail
 };
+
+void *pulseTimerSetup(void){
+	chid = ChannelCreate(0); // Create a communications channel
+
+	event.sigev_notify = SIGEV_PULSE;
+
+	// create a connection back to ourselves for the timer to send the pulse on
+	event.sigev_coid = ConnectAttach(ND_LOCAL_NODE, 0, chid, _NTO_SIDE_CHANNEL, 0);
+	if (event.sigev_coid == -1)
+	{
+	   printf(stderr, "couldn't ConnectAttach to self!\n");
+	   perror(NULL);
+	   exit(EXIT_FAILURE);
+	}
+	//event.sigev_priority = getprio(0);  // this function is depreciated in QNX 700
+	struct sched_param th_param;
+	pthread_getschedparam(pthread_self(), NULL, &th_param);
+	event.sigev_priority = th_param.sched_curpriority;    // old QNX660 version getprio(0);
+
+	event.sigev_code = MY_PULSE_CODE;
+
+	// create the timer, binding it to the event
+	if (timer_create(CLOCK_REALTIME, &event, &timer_id) == -1)
+	{
+	   printf (stderr, "couldn't create a timer, errno %d\n", errno);
+	   perror (NULL);
+	   exit (EXIT_FAILURE);
+	}
+
+	// setup the timer (1.5s initial delay value, 1.5s reload interval)
+	itime.it_value.tv_sec = 1;			  // 1 second
+	itime.it_value.tv_nsec = 500000000;    // 500 million nsecs = .5 secs
+	itime.it_interval.tv_sec = 1;          // 1 second
+	itime.it_interval.tv_nsec = 500000000; // 500 million nsecs = .5 secs
+
+	// and start the timer!
+	timer_settime(timer_id, 0, &itime, NULL);
+
+	return NULL;
+}
 
 void gpioSetup(void)
 {
@@ -215,55 +245,66 @@ void *daySequence(void)
 {
     while(1)
     {
-        sleep(2);
-        switch(intersection.seqState)
-            {   //           North                                                         South
-                //           East                                                          West
-                //           Pedestrian1  Left     Straight     Right    Pedestrian2       Pedestrian1  Left      Straight     Right    Pedestrian2
-                // Safe start
-                case initial:
-                    setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
-                             red,         red,     red,         red,     red,              red,         red,      red,         red,     red); intersection.seqState = day1;  break;
-                // NS start
-                case day1:
-                    setState(red,         red,     red,         green,   red,              red,         red,      red,         green,   red,
-                             red,         green,   red,         red,     red,              red,         green,    red,         red,     red); intersection.seqState = day2;  break;
-                case day2:
-                    setState(red,         red,     red,         yellow,  red,              red,         red,      red,         yellow,  red,
-                             red,         yellow,  red,         red,     red,              red,         yellow,   red,         red,     red); intersection.seqState = day3;  break;
-                case day3:
-                    setState(red,         red,     red,         off,     red,              red,         red,      red,         off,     red,
-                             green,       red,     red,         red,     green,            green,       red,      red,         red,     green); intersection.seqState = day4;  break;
-                case day4:
-                    setState(red,         green,   green,       off,     red,              red,         green,    green,       off,     red,
-                             green,       red,     red,         red,     green,            green,       red,      red,         red,     green); intersection.seqState = day5;  break;
-                case day5:
-                    setState(red,         yellow,  yellow,      off,     red,              red,         yellow,   yellow,      off,     red,
-                             flashing,    red,     red,         red,     flashing,         flashing,    red,      red,         red,     flashing); intersection.seqState = day6;  break;
-                case day6:
-                    setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
-                             red,         red,     red,         red,     red,              red,         red,      red,         red,     red); intersection.seqState = day7;  break;
-                // EW start
-                case day7:
-                    setState(red,         green,   red,         red,     red,              red,         green,    red,         red,     red,
-                             red,         red,     red,         green,   red,              red,         red,      red,         green,   red); intersection.seqState = day8;  break;
-                case day8:
-                    setState(red,         yellow,  red,         red,     red,              red,         yellow,   red,         red,     red,
-                             red,         red,     red,         yellow,  red,              red,         red,      red,         yellow,  red); intersection.seqState = day9;  break;
-                case day9:
-                    setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
-                             red,         red,     red,         off,     red,              red,         red,      red,         off,     red); intersection.seqState = day10; break;
-                case day10:
-                    setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
-                             red,         green,   green,       off,     red,              red,         green,    green,       off,     red); intersection.seqState = day11; break;
-                case day11:
-                    setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
-                             red,         green,   green,       off,     red,              red,         green,    green,       off,     red); intersection.seqState = day12; break;
-                case day12:
-                    setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
-                             red,         red,     red,         red,     red,              red,         red,      red,         red,     red); intersection.seqState = day1; break;
-                default: intersection.seqState = initial;
-            }
+		// wait for message/pulse
+	   rcvid = MsgReceive(chid, &msg, sizeof(msg), NULL);
+
+	   // determine who the message came from
+	   if (rcvid == 0) // this process
+	   {
+		   // received a pulse, now check "code" field...
+		   if (msg.pulse.code == MY_PULSE_CODE) // we got a pulse
+           {
+        //sleep(2);
+				switch(intersection.seqState)
+				{       //           North                                                         South
+						//           East                                                          West
+						//           Pedestrian1  Left     Straight     Right    Pedestrian2       Pedestrian1  Left      Straight     Right    Pedestrian2
+						// Safe start
+						case initial:
+							setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
+									 red,         red,     red,         red,     red,              red,         red,      red,         red,     red); intersection.seqState = day1;  break;
+						// NS start
+						case day1:
+							setState(red,         red,     red,         green,   red,              red,         red,      red,         green,   red,
+									 red,         green,   red,         red,     red,              red,         green,    red,         red,     red); intersection.seqState = day2;  break;
+						case day2:
+							setState(red,         red,     red,         yellow,  red,              red,         red,      red,         yellow,  red,
+									 red,         yellow,  red,         red,     red,              red,         yellow,   red,         red,     red); intersection.seqState = day3;  break;
+						case day3:
+							setState(red,         red,     red,         off,     red,              red,         red,      red,         off,     red,
+									 green,       red,     red,         red,     green,            green,       red,      red,         red,     green); intersection.seqState = day4;  break;
+						case day4:
+							setState(red,         green,   green,       off,     red,              red,         green,    green,       off,     red,
+									 green,       red,     red,         red,     green,            green,       red,      red,         red,     green); intersection.seqState = day5;  break;
+						case day5:
+							setState(red,         yellow,  yellow,      off,     red,              red,         yellow,   yellow,      off,     red,
+									 flashing,    red,     red,         red,     flashing,         flashing,    red,      red,         red,     flashing); intersection.seqState = day6;  break;
+						case day6:
+							setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
+									 red,         red,     red,         red,     red,              red,         red,      red,         red,     red); intersection.seqState = day7;  break;
+						// EW start
+						case day7:
+							setState(red,         green,   red,         red,     red,              red,         green,    red,         red,     red,
+									 red,         red,     red,         green,   red,              red,         red,      red,         green,   red); intersection.seqState = day8;  break;
+						case day8:
+							setState(red,         yellow,  red,         red,     red,              red,         yellow,   red,         red,     red,
+									 red,         red,     red,         yellow,  red,              red,         red,      red,         yellow,  red); intersection.seqState = day9;  break;
+						case day9:
+							setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
+									 red,         red,     red,         off,     red,              red,         red,      red,         off,     red); intersection.seqState = day10; break;
+						case day10:
+							setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
+									 red,         green,   green,       off,     red,              red,         green,    green,       off,     red); intersection.seqState = day11; break;
+						case day11:
+							setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
+									 red,         green,   green,       off,     red,              red,         green,    green,       off,     red); intersection.seqState = day12; break;
+						case day12:
+							setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
+									 red,         red,     red,         red,     red,              red,         red,      red,         red,     red); intersection.seqState = day1; break;
+						default: intersection.seqState = initial;
+					}
+			}
+	   }
     }
     return 0;
 };
@@ -272,43 +313,56 @@ void *nightSequence(void)
 {
     while(1)
     {
-        sleep(2);
-        switch(intersection.seqState)
-            {   //           North                                                 South
-                //           East                                                  West
-                //           Pedestrian1  Left     Straight  Right    Pedestrian2  Pedestrian1  Left     Straight   Right    Pedestrian2
-                // Safe start
-                case initial:
-                    setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
-                             red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night4;  break;
-                // NS start
-                case night4:
-                    setState(red,         green,   green,    off,     red,        red,          green,   green,     off,     red,
-                             green,       red,     red,      red,     green,      green,        red,     red,       red,     green   );  intersection.seqState = night5;  break;
-                case night5:
-                    setState(red,         yellow,  yellow,   off,     red,        red,          yellow,  yellow,    off,     red,
-                             flashing,    red,     red,      red,     flashing,   flashing,     red,     red,       red,     flashing); intersection.seqState = night6;  break;
-                case night6:
-                    setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
-                             red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night10;  break;
-                // EW start
-                case night10:
-                    setState(green,       red,     red,      red,     green,      green,        red,     red,       red,     green,
-                             red,         green,   green,    off,     red,        red,          green,   green,     off,     red     );  intersection.seqState = night11; break;
-                case night11:
-                    setState(green,       red,     red,      red,     green,      green,        red,     red,       red,     green,
-                             red,         green,   green,    off,     red,        red,          green,   green,     off,     red     );  intersection.seqState = night12; break;
-                case night12:
-                    setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
-                             red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night4; break;
-                default: intersection.seqState = initial;
-            }
+    	// wait for message/pulse
+    	   rcvid = MsgReceive(chid, &msg, sizeof(msg), NULL);
+
+    	   // determine who the message came from
+    	   if (rcvid == 0) // this process
+    	   {
+    		   // received a pulse, now check "code" field...
+    		   if (msg.pulse.code == MY_PULSE_CODE) // we got a pulse
+               {
+				//sleep(2);
+				switch(intersection.seqState)
+					{   //           North                                                 South
+						//           East                                                  West
+						//           Pedestrian1  Left     Straight  Right    Pedestrian2  Pedestrian1  Left     Straight   Right    Pedestrian2
+						// Safe start
+						case initial:
+							setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
+									 red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night4;  break;
+						// NS start
+						case night4:
+							setState(red,         green,   green,    off,     red,        red,          green,   green,     off,     red,
+									 green,       red,     red,      red,     green,      green,        red,     red,       red,     green   );  intersection.seqState = night5;  break;
+						case night5:
+							setState(red,         yellow,  yellow,   off,     red,        red,          yellow,  yellow,    off,     red,
+									 flashing,    red,     red,      red,     flashing,   flashing,     red,     red,       red,     flashing); intersection.seqState = night6;  break;
+						case night6:
+							setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
+									 red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night10;  break;
+						// EW start
+						case night10:
+							setState(green,       red,     red,      red,     green,      green,        red,     red,       red,     green,
+									 red,         green,   green,    off,     red,        red,          green,   green,     off,     red     );  intersection.seqState = night11; break;
+						case night11:
+							setState(green,       red,     red,      red,     green,      green,        red,     red,       red,     green,
+									 red,         green,   green,    off,     red,        red,          green,   green,     off,     red     );  intersection.seqState = night12; break;
+						case night12:
+							setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
+									 red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night4; break;
+						default: intersection.seqState = initial;
+					}
+               }
+    	   }
     }
     return 0;
 };
 
 void* commandLineInputThread(void){
     char buffer[256];
+
+    bool isBoomGateClosed = false;
 
     while(true){
         scanf("%s",buffer);//
@@ -338,8 +392,13 @@ void* commandLineInputThread(void){
 
                 break;
             case B:
-                printf("Boom Gate Failure\n");
-
+            	if(isBoomGateClosed){
+                    printf("Boom Gate Opened\n");
+                    unblockSouth();
+            	} else {
+                    printf("Boom Gate Closed\n");
+            		blockSouth();
+            	}
                 break;
             case S:
         		setLight(buffer);

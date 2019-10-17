@@ -4,7 +4,7 @@
  *  Created on: 29Sep.,2019
  *      Author: LukeT
  */
-#include "TL_I1.h"
+#include "TL_I1_Functions.h"
 
 void setState(int northPedestrian1, int northLeft, int northStraight, int northRight, int northPedestrian2,
               int southPedestrian1, int southLeft, int southStraight, int southRight, int southPedestrian2,
