@@ -379,7 +379,7 @@ void* commandLineInputThread(void){
             case D:
                 printf("Starting day sequence\n");
                 pthread_cancel(&nightSequenceID);
-                pthread_create (&daySequenceID, NULL, daySequence, NULL);
+                pthread_create(&daySequenceID, NULL, daySequence, NULL);
                 break;
             case N:
             	if((int)buffer[1] != 0){
@@ -387,7 +387,7 @@ void* commandLineInputThread(void){
             	} else {
                     printf("Starting night sequence\n");
                     pthread_cancel(&daySequenceID);
-                    pthread_create (&nightSequenceID, NULL, daySequence, NULL);
+                    pthread_create(&nightSequenceID, NULL, daySequence, NULL);
             	}
 
                 break;

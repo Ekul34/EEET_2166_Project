@@ -65,6 +65,7 @@ struct intersection
     enum sequenceState seqState;
 }intersection;
 
+pthread_rwlock_t GPIO_Lock;
 
 struct lightMode
 {
@@ -87,7 +88,6 @@ typedef union
 {
 	struct _pulse   pulse;
 } timer;
-
 
 
 #endif /* TL_I1_H_ */

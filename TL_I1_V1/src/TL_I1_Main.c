@@ -8,6 +8,9 @@
 int main(void) {
 	puts("Intersection 1 has started");
 
+	//init read/write lock
+	pthread_rwlock_init(&GPIO_Lock,NULL);
+
 	//Thread actiavtion
 	pthread_t gpioControllerID, commandLineInputID, pulseTimerSetupID; // Storage thread IDs, used for joins ect ect
 	pthread_create (&pulseTimerSetupID, NULL, pulseTimerSetup, NULL);    // Uncomment to run on DE10, will terminate on VM

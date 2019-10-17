@@ -11,6 +11,7 @@ void setState(int northPedestrian1, int northLeft, int northStraight, int northR
               int eastPedestrian1,  int eastLeft,  int eastStraight,  int eastRight,  int eastPedestrian2,
               int westPedestrian1,  int westLeft,  int westStraight,  int westRight,  int westPedestrian2)
 {
+	pthread_rwlock_wrlock(&GPIO_Lock);
 
 	if(intersectionMode.north.pedestrian1 == automatic) intersection.north.pedestrian1	= northPedestrian1;
     if(intersectionMode.north.left == automatic) intersection.north.left     = northLeft;
@@ -35,10 +36,14 @@ void setState(int northPedestrian1, int northLeft, int northStraight, int northR
     if(intersectionMode.west.left == automatic) intersection.west.left        = westLeft;
     if(intersectionMode.west.right == automatic) intersection.west.right       = westRight;
     if(intersectionMode.west.pedestrian2 == automatic) intersection.west.pedestrian2  = westPedestrian2;
+
+	pthread_rwlock_unlock(&GPIO_Lock);
 }
 
 void blockSouth(void)
 {
+	//pthread_rwlock_wrlock(GPIO_Lock);
+
 	intersectionMode.west.right = manual;
 	intersection.west.right = red;
 
@@ -47,10 +52,14 @@ void blockSouth(void)
 
 	intersectionMode.east.left = manual;
 	intersection.east.left = red;
+
+	//pthread_rwlock_unlock(GPIO_Lock);
 };
 
 void blockNorth(void)
 {
+	//pthread_rwlock_wrlock(GPIO_Lock);
+
 	intersectionMode.east.right = manual;
 	intersection.east.right = red;
 
@@ -59,21 +68,30 @@ void blockNorth(void)
 
 	intersectionMode.west.left = manual;
 	intersection.west.left = red;
+
+	//pthread_rwlock_unlock(GPIO_Lock);
 };
 
 void unblockSouth(void)
 {
+	//pthread_rwlock_wrlock(GPIO_Lock);
+
 	intersectionMode.west.right = automatic;
 	intersectionMode.north.straight = automatic;
 	intersectionMode.east.left = automatic;
+
+	//pthread_rwlock_unlock(GPIO_Lock);
 };
 
 void unblockNorth(void)
 {
+	//pthread_rwlock_wrlock(GPIO_Lock);
+
 	intersectionMode.east.right = automatic;
 	intersectionMode.south.straight = automatic;
 	intersectionMode.west.left = automatic;
 
+	//pthread_rwlock_unlock(GPIO_Lock);
 };
 
 void setLight(char buffer[256]){
@@ -127,6 +145,7 @@ void setLight(char buffer[256]){
 			break;
 	}
 
+	//pthread_rwlock_wrlock(GPIO_Lock);
 	switch((int)buffer[2]){
 		case R:
 			if((int)buffer[1] == P){
@@ -194,6 +213,8 @@ void setLight(char buffer[256]){
 			printf("value not defined");
 			break;
 	}
+	//pthread_rwlock_unlock(GPIO_Lock);
+
 }
 
 
