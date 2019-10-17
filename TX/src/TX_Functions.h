@@ -11,15 +11,12 @@
 #include "TX.h"
 
 /// For functions
-void setState(int northPedestrian1, int northLeft, int northStraight, int northRight, int northPedestrian2,
-              int southPedestrian1, int southLeft, int southStraight, int southRight, int southPedestrian2,
-              int eastPedestrian1,  int eastLeft,  int eastStraight,  int eastRight,  int eastPedestrian2,
-              int westPedestrian1,  int westLeft,  int westStraight,  int westRight,  int westPedestrian2);
-void blockSouth(void);
+void setState(bool isTrainLightOn, bool isboomGateClosed);
+/*void blockSouth(void);
 void unblockSouth(void);
 void blockNorth(void);
 void unblockNorth(void);
-void setLight(char buffer[256]);
+void setLight(char buffer[256]);*/
 
 
 #endif /* TX_FUNCTIONS_H_ */

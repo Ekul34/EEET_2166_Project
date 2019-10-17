@@ -26,12 +26,10 @@ timer            		msg;
 
 /// For Threads
 void *gpioController(void);
-void *daySequence(void);
-void *nightSequence(void);
+void *sequence(void);
 void *commandLineInputThread(void);
-
+void *gpioInput(void);
 //pulse timer setup thread
-void *pulseTimerSetup(void);
 void *ServerReceive(void);
 
 

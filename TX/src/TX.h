@@ -1,10 +1,3 @@
-/*
- * TX.h
- *
- *  Created on: 17Oct.,2019
- *      Author: tsdav
- */
-
 #ifndef TX_H_
 #define TX_H_
 
@@ -45,49 +38,25 @@
 #include <sys/iofunc.h>
 
 #define BUF_SIZE 256
-#define ATTACH_POINT "TLC_1" //attach point
+#define ATTACH_POINT "TX" //attach point
 
-enum lightState     {red, yellow, green, off, flashing};
+int gpio_inputVal;
 enum mode     {automatic, manual};
-enum sequenceState  {initial, day1, day2, day3, day4,   day5,   day6, day7, day8, day9, day10,   day11,   day12,
-                                                night4, night5, night6,                 night10, night11, night12};
-                          // Night sequences 4,5,6 and 10,11,12 are equal with the same day sequences numbers
-struct light
-{
-    enum lightState pedestrian1;
-    enum lightState left;
-    enum lightState straight;
-    enum lightState right;
-    enum lightState pedestrian2;
-};
+enum sequenceState  {bGClosed, bGOpen, error};
 
-struct intersection
+struct crossing
 {
-    struct light north;
-    struct light south;
-    struct light east;
-    struct light west;
+    bool trainLight;
+    bool boomGate;
     enum sequenceState seqState;
-}intersection;
+}crossing;
 
 pthread_rwlock_t GPIO_Lock;
 
-struct lightMode
+struct crossingMode
 {
-    enum mode pedestrian1;
-    enum mode left;
-    enum mode straight;
-    enum mode right;
-    enum mode pedestrian2;
-};
-
-struct intersectionMode
-{
-    struct lightMode north;
-    struct lightMode south;
-    struct lightMode east;
-    struct lightMode west;
-}intersectionMode;
+    enum mode crossing;
+}crossingMode;
 
 typedef union
 {

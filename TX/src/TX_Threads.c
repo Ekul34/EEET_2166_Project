@@ -16,51 +16,33 @@
 #define SWITCHES_BASE       0xFF200060  //(Switches - 4 bits wide - Inputs only)
 
 // Thread IDs
-pthread_t daySequenceID, nightSequenceID;
-
-void *pulseTimerSetup(void){
-	chid = ChannelCreate(0); // Create a communications channel
-
-	event.sigev_notify = SIGEV_PULSE;
-
-	// create a connection back to ourselves for the timer to send the pulse on
-	event.sigev_coid = ConnectAttach(ND_LOCAL_NODE, 0, chid, _NTO_SIDE_CHANNEL, 0);
-	if (event.sigev_coid == -1)
-	{
-	   printf(stderr, "couldn't ConnectAttach to self!\n");
-	   perror(NULL);
-	   exit(EXIT_FAILURE);
-	}
-	//event.sigev_priority = getprio(0);  // this function is depreciated in QNX 700
-	struct sched_param th_param;
-	pthread_getschedparam(pthread_self(), NULL, &th_param);
-	event.sigev_priority = th_param.sched_curpriority;    // old QNX660 version getprio(0);
-
-	event.sigev_code = MY_PULSE_CODE;
-
-	// create the timer, binding it to the event
-	if (timer_create(CLOCK_REALTIME, &event, &timer_id) == -1)
-	{
-	   printf (stderr, "couldn't create a timer, errno %d\n", errno);
-	   perror (NULL);
-	   exit (EXIT_FAILURE);
-	}
-
-	// setup the timer (1.5s initial delay value, 1.5s reload interval)
-	itime.it_value.tv_sec = 2;			  // 1 second
-	itime.it_value.tv_nsec = 500000000;    // 500 million nsecs = .5 secs
-	itime.it_interval.tv_sec = 2;          // 1 second
-	itime.it_interval.tv_nsec = 500000000; // 500 million nsecs = .5 secs
-
-	// and start the timer!
-	timer_settime(timer_id, 0, &itime, NULL);
-
-	return NULL;
-}
+pthread_t sequenceID;
 
 void gpioSetup(void)
 {
     // Maybe the setup code from the gpioController() thread below can be moved to it's own function?
+}
+
+void *gpioInput(void)
+{
+	printf("Initialising inputs\n");
+	// GPIO pointers
+    uintptr_t gpio_1_inputs = 0;
+    uintptr_t Switches_inputs = 0;
+
+    // Map inputs
+    gpio_1_inputs = mmap_device_io(PIO_SIZE, GPIO_1_BASE);
+    Switches_inputs = mmap_device_io(PIO_SIZE_Switches, SWITCHES_BASE);
+
+    //Read from inputs
+    //tempVal = in32(Switches_inputs); // Read from DE10 4 slide switches
+    //tempVal = in32(gpio_1_inputs);   // Read from DE10 first 16 pins of GPIO_1
+    printf("Initialising inputs finished\n");
+    while(1){
+    	usleep(50);
+    	gpio_inputVal = in32(gpio_1_inputs);   // Read from DE10 first 16 pins of GPIO_1
+    	//printf("GPIO input = %d",gpio_inputVal);
+    }
 }
 
 void *gpioController(void) // This function will crash if not on real DE10 hardware
@@ -74,19 +56,12 @@ void *gpioController(void) // This function will crash if not on real DE10 hardw
     // GPIO pointers
     uintptr_t gpio_LEDs = 0;
     uintptr_t gpio_0_outputs = 0;
-    uintptr_t gpio_1_inputs = 0;
-    uintptr_t Switches_inputs = 0;
+
 
     // Map outputs
     gpio_LEDs = mmap_device_io(PIO_SIZE, LEDs_BASE);
     gpio_0_outputs = mmap_device_io(PIO_SIZE, GPIO_0_BASE);
-    // Map inputs
-    gpio_1_inputs = mmap_device_io(PIO_SIZE, GPIO_1_BASE);
-    Switches_inputs = mmap_device_io(PIO_SIZE_Switches, SWITCHES_BASE);
 
-    //Read from inputs
-    tempVal = in32(Switches_inputs); // Read from DE10 4 slide switches
-    tempVal = in32(gpio_1_inputs);   // Read from DE10 first 16 pins of GPIO_1
     //Write to outputs
     out32(gpio_LEDs, tempVal);       // Write to DE10 LEDs
     out32(gpio_0_outputs, tempVal);  // Write to DE10 first 16 pins of GPIO_0
@@ -97,260 +72,163 @@ void *gpioController(void) // This function will crash if not on real DE10 hardw
 
     printf("Initialisation finished\n");
 
-    int *pointer = &intersection.north.pedestrian1;
-    int i;
-
-//    for (i=0;i<1000;i++)
-//    {
-//        out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-//    }
-
     while (1){
-        pointer = &intersection.north.pedestrian1;
         sleep(1);
-        for(i = 0; i < 5; i++)
-        {
-            switch(*pointer)
-            {
-                case 0:
-                    printf("RED ");
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // Green
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
 
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);   // RED
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+        	if(crossing.trainLight == true)
+        	{
+                printf("RED ");
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // Green
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
 
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // BLUE
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    break;
-                case 1:
-                    printf("YELLOW ");
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);  // Green  ‭10111111‬
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);   // RED
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
 
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);  // RED
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // BLUE
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+        	}
+        	else
+        	{
+        		printf("OFF ");
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // GREEN
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
 
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // BLUE
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    break;
-                case 2:
-                    printf("GREEN ");
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);   // GREEN
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // RED
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
 
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // RED
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // BLUE
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+        	}
 
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // BLUE
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                    break;
-                case 3:
-                     printf("OFF ");
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // GREEN
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+        	if(crossing.boomGate == true)
+        	{
+                printf("RED ");
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // Green
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
 
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // RED
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);   // RED
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 3); out32(gpio_0_outputs, 0);
 
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // BLUE
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-                     break;
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // BLUE
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+                out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+        	}
+        	else
+        	{
+        		printf("OFF ");
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // GREEN
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
 
-            }
-            pointer++;
-        }
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // RED
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);   // BLUE
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+				 out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
+        	}
         printf("\n");
     }
     return 0;
 };
 
-void *daySequence(void)
+void *sequence(void)
 {
     while(1)
     {
-		// wait for message/pulse
-	   rcvid = MsgReceive(chid, &msg, sizeof(msg), NULL);
+		switch(crossing.seqState)
+		{
+				//setState(bool isTrainLightOn, bool isboomGateClosed);
+				// Safe start
+				case bGClosed:
+					setState(false, true);
+					while(gpio_inputVal == 65535){};
+					while(gpio_inputVal == 65534){};
+					crossing.seqState = bGOpen;
+					break;
+				// NS start
+				case bGOpen:
+					setState(true, false);
+					while(gpio_inputVal == 65535){};
+					while(gpio_inputVal == 65534){};
+					crossing.seqState = bGClosed;
+					break;
+				/*case error:
+					setState(true, true);
+					crossing.seqState = bGClosed;
+					break;*/
 
-	   // determine who the message came from
-	   if (rcvid == 0) // this process
-	   {
-		   // received a pulse, now check "code" field...
-		   if (msg.pulse.code == MY_PULSE_CODE) // we got a pulse
-           {
-        //sleep(2);
-				switch(intersection.seqState)
-				{       //           North                                                         South
-						//           East                                                          West
-						//           Pedestrian1  Left     Straight     Right    Pedestrian2       Pedestrian1  Left      Straight     Right    Pedestrian2
-						// Safe start
-						case initial:
-							setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
-									 red,         red,     red,         red,     red,              red,         red,      red,         red,     red); intersection.seqState = day1;  break;
-						// NS start
-						case day1:
-							setState(red,         red,     red,         green,   red,              red,         red,      red,         green,   red,
-									 red,         green,   red,         red,     red,              red,         green,    red,         red,     red); intersection.seqState = day2;  break;
-						case day2:
-							setState(red,         red,     red,         yellow,  red,              red,         red,      red,         yellow,  red,
-									 red,         yellow,  red,         red,     red,              red,         yellow,   red,         red,     red); intersection.seqState = day3;  break;
-						case day3:
-							setState(red,         red,     red,         off,     red,              red,         red,      red,         off,     red,
-									 green,       red,     red,         red,     green,            green,       red,      red,         red,     green); intersection.seqState = day4;  break;
-						case day4:
-							setState(red,         green,   green,       off,     red,              red,         green,    green,       off,     red,
-									 green,       red,     red,         red,     green,            green,       red,      red,         red,     green); intersection.seqState = day5;  break;
-						case day5:
-							setState(red,         yellow,  yellow,      off,     red,              red,         yellow,   yellow,      off,     red,
-									 flashing,    red,     red,         red,     flashing,         flashing,    red,      red,         red,     flashing); intersection.seqState = day6;  break;
-						case day6:
-							setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
-									 red,         red,     red,         red,     red,              red,         red,      red,         red,     red); intersection.seqState = day7;  break;
-						// EW start
-						case day7:
-							setState(red,         green,   red,         red,     red,              red,         green,    red,         red,     red,
-									 red,         red,     red,         green,   red,              red,         red,      red,         green,   red); intersection.seqState = day8;  break;
-						case day8:
-							setState(red,         yellow,  red,         red,     red,              red,         yellow,   red,         red,     red,
-									 red,         red,     red,         yellow,  red,              red,         red,      red,         yellow,  red); intersection.seqState = day9;  break;
-						case day9:
-							setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
-									 red,         red,     red,         off,     red,              red,         red,      red,         off,     red); intersection.seqState = day10; break;
-						case day10:
-							setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
-									 red,         green,   green,       off,     red,              red,         green,    green,       off,     red); intersection.seqState = day11; break;
-						case day11:
-							setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
-									 red,         green,   green,       off,     red,              red,         green,    green,       off,     red); intersection.seqState = day12; break;
-						case day12:
-							setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
-									 red,         red,     red,         red,     red,              red,         red,      red,         red,     red); intersection.seqState = day1; break;
-						default: intersection.seqState = initial;
-					}
-			}
-	   }
-    }
-    return 0;
-};
-
-void *nightSequence(void)
-{
-    while(1)
-    {
-    	// wait for message/pulse
-    	   rcvid = MsgReceive(chid, &msg, sizeof(msg), NULL);
-
-    	   // determine who the message came from
-    	   if (rcvid == 0) // this process
-    	   {
-    		   // received a pulse, now check "code" field...
-    		   if (msg.pulse.code == MY_PULSE_CODE) // we got a pulse
-               {
-				//sleep(2);
-				switch(intersection.seqState)
-					{   //           North                                                 South
-						//           East                                                  West
-						//           Pedestrian1  Left     Straight  Right    Pedestrian2  Pedestrian1  Left     Straight   Right    Pedestrian2
-						// Safe start
-						case initial:
-							setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
-									 red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night4;  break;
-						// NS start
-						case night4:
-							setState(red,         green,   green,    off,     red,        red,          green,   green,     off,     red,
-									 green,       red,     red,      red,     green,      green,        red,     red,       red,     green   );  intersection.seqState = night5;  break;
-						case night5:
-							setState(red,         yellow,  yellow,   off,     red,        red,          yellow,  yellow,    off,     red,
-									 flashing,    red,     red,      red,     flashing,   flashing,     red,     red,       red,     flashing); intersection.seqState = night6;  break;
-						case night6:
-							setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
-									 red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night10;  break;
-						// EW start
-						case night10:
-							setState(green,       red,     red,      red,     green,      green,        red,     red,       red,     green,
-									 red,         green,   green,    off,     red,        red,          green,   green,     off,     red     );  intersection.seqState = night11; break;
-						case night11:
-							setState(green,       red,     red,      red,     green,      green,        red,     red,       red,     green,
-									 red,         green,   green,    off,     red,        red,          green,   green,     off,     red     );  intersection.seqState = night12; break;
-						case night12:
-							setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
-									 red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night4; break;
-						default: intersection.seqState = initial;
-					}
-               }
-    	   }
+				default: crossing.seqState = bGClosed;
+		}
     }
     return 0;
 };
@@ -358,52 +236,34 @@ void *nightSequence(void)
 void* commandLineInputThread(void){
     char buffer[256];
 
-    bool isBoomGateClosed = false;
+    bool isError = false;
 
     while(true){
     	scanf("%s",buffer);//
-
-    	printf("%c,",buffer[0]);
-		printf("%c,",buffer[1]);
-		printf("%c\n",buffer[2]);
 
 		switch((int)buffer[0]){
 			case Q:
 				printf("Quitting thread\n");
 				pthread_cancel(pthread_self()); //kills itself
 				break;
-			case D:
-				printf("Starting day sequence\n");
-				pthread_cancel(&nightSequenceID);
-				pthread_create(&daySequenceID, NULL, daySequence, NULL);
+			case S:
+				printf("Starting sequence\n");
+				pthread_create(&sequenceID, NULL, sequence, NULL);
 				break;
-			case N:
-				if((int)buffer[1] != 0){
-					setLight(buffer);
+			case E:
+				if(!isError){
+					crossingMode.crossing = manual;
+					crossing.boomGate = true;
+					crossing.trainLight = true;
+					isError = true;
 				} else {
-					printf("Starting night sequence\n");
-					pthread_cancel(&daySequenceID);
-					pthread_create(&nightSequenceID, NULL, daySequence, NULL);
+					crossingMode.crossing = automatic;
+					crossing.boomGate = false;
+					crossing.trainLight = true;
+					isError = false;
 				}
 
 				break;
-			case B:
-				if(isBoomGateClosed){
-					printf("Boom Gate Opened\n");
-					unblockSouth();
-				} else {
-					printf("Boom Gate Closed\n");
-					blockSouth();
-				}
-				break;
-			case S:
-				setLight(buffer);
-				break;
-			case E:
-				setLight(buffer);
-				break;
-			case W:
-				setLight(buffer);
 			default:
 				printf("Input not a command\n");
 				break;
@@ -454,7 +314,7 @@ void *ServerReceive(void) {
            }
 
            if (msg.hdr.type == _IO_CONNECT ) {
-               MsgReply(rcvid, intersection.seqState, NULL, 0 );
+               MsgReply(rcvid, crossing.seqState, NULL, 0 );
                continue;
            }
 
@@ -462,57 +322,30 @@ void *ServerReceive(void) {
                MsgError( rcvid, ENOSYS );
                continue;
            }
-		   sprintf(replymsg.buf, "%d", intersection.seqState);
+		   sprintf(replymsg.buf, "%d", crossing.seqState);
 
            //printf("Server received %s \n", ReceiveBuff);
 
            MsgReply(rcvid, EOK, &replymsg, sizeof(replymsg));
 
            /***COMMANDS*/
-           	bool isBoomGateClosed = false;
-
-			switch((int)ReceiveBuff[0]){
+           	switch((int)ReceiveBuff[0]){
 				case Q:
 					printf("Quitting thread\n");
 					pthread_cancel(pthread_self()); //kills itself
 					break;
-				case D:
-					printf("Starting day sequence\n");
-					pthread_cancel(&nightSequenceID);
-					pthread_create(&daySequenceID, NULL, daySequence, NULL);
-					break;
-				case N:
-					if((int)ReceiveBuff[1] != 0){
-						setLight(ReceiveBuff);
-					} else {
-						printf("Starting night sequence\n");
-						pthread_cancel(&daySequenceID);
-						pthread_create(&nightSequenceID, NULL, daySequence, NULL);
-					}
-
-					break;
-				case B:
-					if(isBoomGateClosed){
-						printf("Boom Gate Opened\n");
-						unblockSouth();
-					} else {
-						printf("Boom Gate Closed\n");
-						blockSouth();
-					}
-					break;
 				case S:
-					setLight(ReceiveBuff);
+					printf("Starting sequence\n");
+					pthread_create(&sequenceID, NULL, sequence, NULL);
 					break;
 				case E:
-					setLight(ReceiveBuff);
+					crossingMode.crossing = manual;
+					setState(true, true);
 					break;
-				case W:
-					setLight(ReceiveBuff);
 				default:
-					//printf("Input not a command\n");
+					printf("Input not a command\n");
 					break;
 			}
-
        }
 
        /* Remove the name from the space */
