@@ -17,8 +17,10 @@
 
 
 #include <sys/dispatch.h>
-#define BUF_SIZE 100
-#define ATTACH_POINT "balll"
+#define BUF_SIZE 256
+#define ATTACH_POINT_1 "/net/cycloneVg01d/dev/name/local/TLC_1"
+
+#define ATTACH_POINT_2 "/net/cycloneV_user/dev/name/local/TLC_2" //undefined yet
 
 
 /* All of your messages should start with this header */
@@ -76,6 +78,11 @@ char message[256] = "";//will have to make it global variable and read write loc
 int messageready = 0;
 int option1 = 0;
 int input_finish = 1;
+int I1statereceived = 0;
+char I1statereceived_string[2] = "";
+
+int I2statereceived = 0;
+char I2statereceived_string[2] = "";
 
 
 
@@ -282,7 +289,12 @@ void *LCD_A_options (void *data)
 
 						if(option1 == 1)
 						{
+//							pthread_mutex_lock(&mutex1);
+//							input_finish = 1;
+//							pthread_mutex_unlock(&mutex1);
+							pthread_mutex_lock(&mutex1);
 							messageready = 1;
+							pthread_mutex_unlock(&mutex1);
 							printf("Sending Message = %s\n", message);
 							fflush(stdout);
 						}
@@ -329,7 +341,9 @@ void *LCD_A_options (void *data)
 
 				if(option1 == 1)
 				{
+					pthread_mutex_lock(&mutex1);
 					messageready = 1;
+					pthread_mutex_unlock(&mutex1);
 					printf("Message sending\n");
 					fflush(stdout);
 				}
@@ -355,44 +369,44 @@ void *LCD_A_options (void *data)
 
 }
 
-//void *LCD_B_I1_states (void *data)
-//{
-//	//use top left 5 bit to display the state
-//
-//	LCD_connect *td = (LCD_connect*) data;
-//	uint8_t	LCDdata[5] = {};
-//	if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
-//	// write some Text to the LCD screen
-//	SetCursor(td->fd, td->Address,0,15); // set cursor on LCD to first position first line
-//	sprintf(LCDdata,"I1=  ");
-//	I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
-//	if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
-//
-//	int i = 0;
-//	while(1)
-//	{
-//
-//
-//		while(I1statereceived)
-//		{
-//			pthread_mutex_lock(&mutex1);
-//			I1statereceived = 0;
-//			pthread_mutex_unlock(&mutex1);
-//
-//			if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
-//			// write some Text to the LCD screen
-//			SetCursor(td->fd, td->Address,0,15); // set cursor on LCD to first position first line
-//			sprintf(LCDdata,"I1=%s",ReceiveBuff);
-//			I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
-//			if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
-//
-//		}
-//
-//		//usleep(100);
-//	}
-//
-//	return 0;
-//}
+void *LCD_B_I1_states (void *data)
+{
+	//use top left 5 bit to display the state
+
+	LCD_connect *td = (LCD_connect*) data;
+	uint8_t	LCDdata[5] = {};
+	if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
+	// write some Text to the LCD screen
+	SetCursor(td->fd, td->Address,0,15); // set cursor on LCD to first position first line
+	sprintf(LCDdata,"I1=  ");
+	I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
+	if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
+
+	int i = 0;
+	while(1)
+	{
+
+
+		while(I1statereceived)
+		{
+			pthread_mutex_lock(&mutex1);
+			I1statereceived = 0;
+			pthread_mutex_unlock(&mutex1);
+
+			if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
+			// write some Text to the LCD screen
+			SetCursor(td->fd, td->Address,0,15); // set cursor on LCD to first position first line
+			sprintf(LCDdata,"I1=%s",I1statereceived_string);
+			I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
+			if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
+
+		}
+
+		usleep(100);
+	}
+
+	return 0;
+}
 
 void *LCD_D_I2_states (void *data)
 {
@@ -409,28 +423,30 @@ void *LCD_D_I2_states (void *data)
 
 	LCDdata[5];
 
-	int i = 99;
+	int i = 0;
 	while(1)
 	{
-		//only update if state updates
-		usleep(1000000); // 1 seconds
-
-		//dummy state data from 1 - 99
 
 
-		if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
-		// write some Text to the LCD screen
-		SetCursor(td->fd, td->Address,1,15); // set cursor on LCD to first position first line
-		sprintf(LCDdata,"I2=%d",i);
-		I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
-		if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
-
-		i--;
-		if(i == 0)
+		while(I2statereceived)
 		{
-			i = 99;
+			pthread_mutex_lock(&mutex1);
+			I2statereceived = 0;
+			pthread_mutex_unlock(&mutex1);
+
+			if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
+			// write some Text to the LCD screen
+			SetCursor(td->fd, td->Address,1,15); // set cursor on LCD to first position first line
+			sprintf(LCDdata,"I2=%s",I2statereceived_string);
+			I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
+			if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
+
 		}
+
+		usleep(100);
 	}
+
+	return 0;
 }
 
 
@@ -566,7 +582,7 @@ void *LCD_C_keypad (void *data)
 
 				pthread_mutex_lock(&mutex1);
 				option1 = keypad_value;
-				pthread_cond_signal(&condvar);
+				//pthread_cond_signal(&condvar);
 				pthread_mutex_unlock(&mutex1);
 			 }
 			 else if(keypad_value == 16)
@@ -601,95 +617,133 @@ void *LCD_C_keypad (void *data)
 }
 
 
-void *ServerReceive(void *data) {
-
-	   //name_attach_t *attach;
-	   my_data_t msg;
-	   int rcvid;
-	   LCD_connect *td = (LCD_connect*) data;
-	   uint8_t	LCDdata[5] = {};
-	   if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
-	   // write some Text to the LCD screen
-	   SetCursor(td->fd, td->Address,0,15); // set cursor on LCD to first position first line
-	   sprintf(LCDdata,"I1=  ");
-	   I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
-	   if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
-
-
-	   if ((attach = name_attach(NULL, ATTACH_POINT, 0)) == NULL)
-	   {
-		   printf("Couldnt attach to receive from client \n");
-	       return 0;
-	   }
-
-
-	   int I1statereceived = 0;
-	   char ReceiveBuff[BUF_SIZE]="";
-	   while (1)
-	   {
-
-			rcvid = MsgReceive(attach->chid, &ReceiveBuff, sizeof(ReceiveBuff), NULL);
-
-			//printf("Server received %d \n", rcvid);
-
-			if(rcvid >= 3) //idk why 3 but for now rcvid = 1
-			{
-				I1statereceived = 1;
-
-			}
-
-			while(I1statereceived)
-			{
-				I1statereceived = 0;
-				if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
-				// write some Text to the LCD screen
-				SetCursor(td->fd, td->Address,0,15); // set cursor on LCD to first position first line
-				sprintf(LCDdata,"I1=%s",ReceiveBuff);
-				I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
-				if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
-
-			}
-
-	       MsgReply(rcvid, EOK, 0, 0);
-	       usleep(100);
-
-	   }
-
-	   /* Remove the name from the space */
-	   name_detach(attach, 0);
-
-	   return EXIT_SUCCESS;
-}
-
 
 void *messagesending(void *Not_used)
 {
+	my_data_t msg1;
+	my_reply reply1;
+	int server_coid_i1;
 	char messagetosendi1[256] = "";
+
+	if ((server_coid_i1 = name_open(ATTACH_POINT_1, 0)) == -1)
+	{
+		printf("Cant attach to TLC_1\n");
+		return EXIT_FAILURE;
+	} //connect to intersection 1
+
+
+	msg1.hdr.type = 0x00;
+	msg1.hdr.subtype = 0x00;
+
+
+	my_data_t msg2;
+	my_reply reply2;
+	int server_coid_i2;
 	char messagetosendi2[256] = "";
+
+
+	if ((server_coid_i2 = name_open(ATTACH_POINT_2, 0)) == -1)
+	{
+		printf("Cant attach to TLC_2\n");
+		//return EXIT_FAILURE;
+	} //connect to intersection 2
+
 
 	while(1)
 	{
-		while(messageready)
+		if(messageready)
 		{
 			if(message[0] == '1')
 			{
 				memcpy(messagetosendi1, &message[1], 255);
-				printf("Message sent to i1 %s\n", messagetosendi1);
+				if (MsgSend(server_coid_i1, &messagetosendi1, sizeof(messagetosendi1), &reply1, sizeof(reply1)) == -1)
+				{
+					printf("Message sent to i1 %s\n", messagetosendi1);
+				}
+				fflush(stdout);
+				pthread_mutex_lock(&mutex1);
+				messageready = 0;
+				pthread_mutex_unlock(&mutex1);
+
 			}
 			else if(message[0] == '2')
 			{
 				memcpy(messagetosendi2, &message[1], 255);
 				printf("Message sent to i2 %s\n", messagetosendi2);
+				if (MsgSend(server_coid_i2, &messagetosendi2, sizeof(messagetosendi2), &reply2, sizeof(reply2)) == -1)
+				{
+					printf("Message sent to i2 %s\n", messagetosendi2);
+				}
+				fflush(stdout);
+				pthread_mutex_lock(&mutex1);
+				messageready = 0;
+				pthread_mutex_unlock(&mutex1);
 			}
-			fflush(stdout);
-			messageready = 0;
+		}
+		else
+		{
+			sprintf(messagetosendi1, "");
+			//printf("Client sending %s \n", messagetosendi1);
+			if (MsgSend(server_coid_i1, &messagetosendi1, sizeof(messagetosendi1), &reply1, sizeof(reply1)) == -1)
+			{
+				strcpy(I1statereceived_string, "XX");
+				pthread_mutex_lock(&mutex1);
+				I1statereceived = 1;
+				pthread_mutex_unlock(&mutex1);
+				ConnectDetach(server_coid_i1);
+				if ((server_coid_i1 = name_open(ATTACH_POINT_1, 0)) == -1)
+				{
+					printf("Cant ping intersection 1, try again\n");
+					usleep(100);
+				}
+
+			}
+			else
+			{
+				//printf("   -->Reply is: '%s'\n", reply.buf);
+				strcpy(I1statereceived_string, reply1.buf);
+				pthread_mutex_lock(&mutex1);
+				I1statereceived = 1;
+				pthread_mutex_unlock(&mutex1);
+
+			}//ping to i1 done
+
+
+
+			sprintf(messagetosendi2, "");
+			//printf("Client sending %s \n", messagetosendi1);
+			if (MsgSend(server_coid_i2, &messagetosendi2, sizeof(messagetosendi2), &reply2, sizeof(reply2)) == -1)
+			{
+				strcpy(I2statereceived_string, "XX");
+				pthread_mutex_lock(&mutex1);
+				I2statereceived = 1;
+				pthread_mutex_unlock(&mutex1);
+				ConnectDetach(server_coid_i2);
+				if ((server_coid_i2 = name_open(ATTACH_POINT_2, 0)) == -1)
+				{
+					printf("Cant ping intersection 2, try again\n");
+					sleep(1);
+				}
+
+			}
+			else
+			{
+				//printf("   -->Reply is: '%s'\n", reply.buf);
+				strcpy(I2statereceived_string, reply2.buf);
+				pthread_mutex_lock(&mutex1);
+				I2statereceived = 1;
+				pthread_mutex_unlock(&mutex1);
+
+			}
+
+
+
+
 
 		}
-		//printf("No message\n");
-		usleep(100);
+
+
 	}
-
-
 }
 
 int main(int argc, char *argv[])
@@ -738,10 +792,12 @@ int main(int argc, char *argv[])
 
 
 	pthread_create (&th1, NULL, LCD_A_options, &td);
-	////pthread_create (&th2, NULL, LCD_B_I1_states, &td);
-	pthread_create (&th2, NULL, messagesending, NULL);
-	pthread_create (&th4, NULL, LCD_D_I2_states, &td);
-	pthread_create (&th6, NULL, ServerReceive, &td);
+	pthread_create (&th2, NULL, LCD_B_I1_states, &td);
+	pthread_create (&th4, NULL, messagesending, NULL);
+	pthread_create (&th6, NULL, LCD_D_I2_states, &td);
+	//pthread_create (&th6, NULL, ServerReceive, &td);
+
+	//thread th5 is the keypad which is only created after successful log in
 	while(1)
 	{
 		int tries=0;
