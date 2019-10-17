@@ -9,7 +9,8 @@ int main(void) {
 	puts("Intersection 1 has started");
 
 	//Thread actiavtion
-	pthread_t gpioControllerID, commandLineInputID; // Storage thread IDs, used for joins ect ect
+	pthread_t gpioControllerID, commandLineInputID, pulseTimerSetupID; // Storage thread IDs, used for joins ect ect
+	pthread_create (&pulseTimerSetupID, NULL, pulseTimerSetup, NULL);    // Uncomment to run on DE10, will terminate on VM
 	pthread_create (&gpioControllerID, NULL, gpioController, NULL);    // Uncomment to run on DE10, will terminate on VM
 	pthread_create(&commandLineInputID, NULL, commandLineInputThread, NULL);
 
