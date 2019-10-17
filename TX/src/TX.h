@@ -1,12 +1,12 @@
 /*
- * TL_I1.h
+ * TX.h
  *
- *  Created on: 29Sep.,2019
- *      Author: LukeT
+ *  Created on: 17Oct.,2019
+ *      Author: tsdav
  */
 
-#ifndef TL_I1_H_
-#define TL_I1_H_
+#ifndef TX_H_
+#define TX_H_
 
 //string defines for input switch statement
 #define B                   66
@@ -116,4 +116,5 @@ typedef struct
     char buf[BUF_SIZE];// Message we send back to clients to tell them the messages was processed correctly.
 } my_reply;
 
-#endif /* TL_I1_H_ */
+
+#endif /* TX_H_ */

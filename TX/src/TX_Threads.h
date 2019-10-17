@@ -1,14 +1,14 @@
 /*
- * TL_I1_Threads.h
+ * TX_Threads.h
  *
  *  Created on: 17Oct.,2019
  *      Author: tsdav
  */
 
-#ifndef TL_I1_THREADS_H_
-#define TL_I1_THREADS_H_
+#ifndef TX_THREADS_H_
+#define TX_THREADS_H_
 
-#include "TL_I1.h"
+#include "TX.h"
 
 #define MY_PULSE_CODE   _PULSE_CODE_MINAVAIL
 
@@ -34,4 +34,5 @@ void *commandLineInputThread(void);
 void *pulseTimerSetup(void);
 void *ServerReceive(void);
 
-#endif /* TL_I1_THREADS_H_ */
+
+#endif /* TX_THREADS_H_ */
