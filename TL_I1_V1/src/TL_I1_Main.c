@@ -23,12 +23,11 @@ int main(void) {
 	pthread_attr_setinheritsched (&th1_attr, PTHREAD_EXPLICIT_SCHED);
 	pthread_attr_setstacksize (&th1_attr, 8000);
 
-    pthread_create(&th1, NULL, ServerReceive, NULL);
-
-
 	pthread_create (&pulseTimerSetupID, NULL, pulseTimerSetup, NULL);    // Uncomment to run on DE10, will terminate on VM
 	pthread_create (&gpioControllerID, NULL, gpioController, NULL);    // Uncomment to run on DE10, will terminate on VM
-	pthread_create(&commandLineInputID, NULL, commandLineInputThread, NULL);
+
+    pthread_create(&th1, NULL, ServerReceive, NULL);
+	//pthread_create(&commandLineInputID, NULL, commandLineInputThread, NULL);
 
     pthread_join(th1,&retval);
 

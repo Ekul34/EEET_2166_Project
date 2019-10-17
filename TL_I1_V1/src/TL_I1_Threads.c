@@ -18,11 +18,20 @@
 // Thread IDs
 pthread_t daySequenceID, nightSequenceID;
 
-void extCommunication(void)
+void *extCommunication(void *data)
 {
+	inputData *td=(inputData*)data;
+
+	char *buffer = td->buffer;
+
+	printf("%s\n",buffer);
+
     // some code that talks with other nodes
     // Send status of LEDs/State
     // receive commands to change  LED | Day | Night | train start | train finish | Boom gate fail
+
+
+	return NULL;
 };
 
 void *pulseTimerSetup(void){
@@ -368,71 +377,69 @@ void* commandLineInputThread(void){
     bool isBoomGateClosed = false;
 
     while(true){
-        scanf("%s",buffer);//
+    	scanf("%s",buffer);//
 
-        printf("%c,",buffer[0]);
-        printf("%c,",buffer[1]);
-        printf("%c\n",buffer[2]);
+    	printf("%c,",buffer[0]);
+		printf("%c,",buffer[1]);
+		printf("%c\n",buffer[2]);
 
-        switch((int)buffer[0]){
-            case Q:
-                printf("Quitting thread\n");
-                pthread_cancel(pthread_self()); //kills itself
-                break;
-            case D:
-                printf("Starting day sequence\n");
-                pthread_cancel(&nightSequenceID);
-                pthread_create(&daySequenceID, NULL, daySequence, NULL);
-                break;
-            case N:
-            	if((int)buffer[1] != 0){
-            		setLight(buffer);
-            	} else {
-                    printf("Starting night sequence\n");
-                    pthread_cancel(&daySequenceID);
-                    pthread_create(&nightSequenceID, NULL, daySequence, NULL);
-            	}
+		switch((int)buffer[0]){
+			case Q:
+				printf("Quitting thread\n");
+				pthread_cancel(pthread_self()); //kills itself
+				break;
+			case D:
+				printf("Starting day sequence\n");
+				pthread_cancel(&nightSequenceID);
+				pthread_create(&daySequenceID, NULL, daySequence, NULL);
+				break;
+			case N:
+				if((int)buffer[1] != 0){
+					setLight(buffer);
+				} else {
+					printf("Starting night sequence\n");
+					pthread_cancel(&daySequenceID);
+					pthread_create(&nightSequenceID, NULL, daySequence, NULL);
+				}
 
-                break;
-            case B:
-            	if(isBoomGateClosed){
-                    printf("Boom Gate Opened\n");
-                    unblockSouth();
-            	} else {
-                    printf("Boom Gate Closed\n");
-            		blockSouth();
-            	}
-                break;
-            case S:
-        		setLight(buffer);
-                break;
-            case E:
-        		setLight(buffer);
-                break;
-            case W:
-        		setLight(buffer);
-            default:
-                printf("Input not a command\n");
-                break;
-        }
+				break;
+			case B:
+				if(isBoomGateClosed){
+					printf("Boom Gate Opened\n");
+					unblockSouth();
+				} else {
+					printf("Boom Gate Closed\n");
+					blockSouth();
+				}
+				break;
+			case S:
+				setLight(buffer);
+				break;
+			case E:
+				setLight(buffer);
+				break;
+			case W:
+				setLight(buffer);
+			default:
+				printf("Input not a command\n");
+				break;
+		}
     }
 };
+
+pthread_t commandLineInputID;
 
 void *ServerReceive(void) {
 
        name_attach_t *attach;
        char ReceiveBuff[BUF_SIZE]="";
        my_data_t msg;
-       int rcvid;
+       int rcvid = 0;
 
        if ((attach = name_attach(NULL, ATTACH_POINT, 0)) == NULL) {
            printf("Couldnt attach to receive from client \n");
            return 0;
        }
-
-		rcvid=0;
-		int msgnum=0;  	// no message received yet
-		int Stay_alive=0, living=0;	// server stays running (ignores _PULSE_CODE_DISCONNECT request)
 
 		my_reply replymsg; 			// replymsg structure for sending back to client
 		replymsg.hdr.type = 0x01;
@@ -473,9 +480,54 @@ void *ServerReceive(void) {
            }
 		   sprintf(replymsg.buf, "%d", intersection.seqState);
 
+           //printf("Server received %s \n", ReceiveBuff);
 
-           printf("Server received %s \n", ReceiveBuff);
            MsgReply(rcvid, EOK, &replymsg, sizeof(replymsg));
+
+           /***COMMANDS*/
+           	bool isBoomGateClosed = false;
+
+			switch((int)ReceiveBuff[0]){
+				case Q:
+					printf("Quitting thread\n");
+					pthread_cancel(pthread_self()); //kills itself
+					break;
+				case D:
+					printf("Starting day sequence\n");
+					pthread_cancel(&nightSequenceID);
+					pthread_create(&daySequenceID, NULL, daySequence, NULL);
+					break;
+				case N:
+					if((int)ReceiveBuff[1] != 0){
+						setLight(ReceiveBuff);
+					} else {
+						printf("Starting night sequence\n");
+						pthread_cancel(&daySequenceID);
+						pthread_create(&nightSequenceID, NULL, daySequence, NULL);
+					}
+
+					break;
+				case B:
+					if(isBoomGateClosed){
+						printf("Boom Gate Opened\n");
+						unblockSouth();
+					} else {
+						printf("Boom Gate Closed\n");
+						blockSouth();
+					}
+					break;
+				case S:
+					setLight(ReceiveBuff);
+					break;
+				case E:
+					setLight(ReceiveBuff);
+					break;
+				case W:
+					setLight(ReceiveBuff);
+				default:
+					//printf("Input not a command\n");
+					break;
+			}
 
        }
 

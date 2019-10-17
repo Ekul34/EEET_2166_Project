@@ -12,6 +12,10 @@
 
 #define MY_PULSE_CODE   _PULSE_CODE_MINAVAIL
 
+typedef struct{
+	char buffer[BUF_SIZE];
+} inputData;
+
 ///pulse timer setup
 struct sigevent         event;
 struct itimerspec       itime;
@@ -21,7 +25,7 @@ int                     rcvid;
 timer            		msg;
 
 /// For Threads
-void extCommunication(void);
+void *extCommunication(void *buffer);
 void *gpioController(void);
 void *daySequence(void);
 void *nightSequence(void);

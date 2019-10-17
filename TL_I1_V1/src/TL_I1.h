@@ -97,7 +97,7 @@ typedef union
 /* All of your messages should start with this header */
 typedef struct _pulse msg_header_t;
 
-#define BUF_SIZE 100
+#define BUF_SIZE 256
 #define ATTACH_POINT "TLC"
 #include <sys/neutrino.h>
 
@@ -115,7 +115,5 @@ typedef struct
     struct _pulse hdr; // Our real data comes after this header
     char buf[BUF_SIZE];// Message we send back to clients to tell them the messages was processed correctly.
 } my_reply;
-
-
 
 #endif /* TL_I1_H_ */
