@@ -480,7 +480,7 @@ void *ServerReceive(void) {
            }
 		   sprintf(replymsg.buf, "%d", intersection.seqState);
 
-           printf("Server received %s \n", ReceiveBuff);
+           //printf("Server received %s \n", ReceiveBuff);
 
            MsgReply(rcvid, EOK, &replymsg, sizeof(replymsg));
 
