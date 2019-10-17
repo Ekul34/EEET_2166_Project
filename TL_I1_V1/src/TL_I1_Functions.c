@@ -106,15 +106,15 @@ void setLight(char buffer[256]){
 			ptr += 0;
 			ptrMode += 0;
 			break;
-		case S:
+		case W:
 			ptr += 5;
 			ptrMode += 5;
 			break;
-		case E:
+		case S:
 			ptr += 10;
 			ptrMode += 10;
 			break;
-		case W:
+		case E:
 			ptr += 15;
 			ptrMode += 15;
 			break;

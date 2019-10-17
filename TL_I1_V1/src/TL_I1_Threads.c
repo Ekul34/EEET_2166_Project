@@ -47,9 +47,9 @@ void *pulseTimerSetup(void){
 	}
 
 	// setup the timer (1.5s initial delay value, 1.5s reload interval)
-	itime.it_value.tv_sec = 2;			  // 1 second
+	itime.it_value.tv_sec = 10;			  // 1 second
 	itime.it_value.tv_nsec = 500000000;    // 500 million nsecs = .5 secs
-	itime.it_interval.tv_sec = 2;          // 1 second
+	itime.it_interval.tv_sec = 10;          // 1 second
 	itime.it_interval.tv_nsec = 500000000; // 500 million nsecs = .5 secs
 
 	// and start the timer!
@@ -63,9 +63,36 @@ void gpioSetup(void)
     // Maybe the setup code from the gpioController() thread below can be moved to it's own function?
 }
 
+void *gpioInput(void)
+{
+	printf("GPIO Input Initialising\n");
+
+
+	// GPIO pointers
+    uintptr_t gpio_1_inputs = 0;
+    uintptr_t Switches_inputs = 0;
+
+    // Map inputs
+    gpio_1_inputs = mmap_device_io(PIO_SIZE, GPIO_1_BASE);
+    Switches_inputs = mmap_device_io(PIO_SIZE_Switches, SWITCHES_BASE);
+
+    //Read from inputs
+    //gpio_inputVal = in32(Switches_inputs); // Read from DE10 4 slide switches
+    gpio_inputVal = in32(gpio_1_inputs);   // Read from DE10 first 16 pins of GPIO_1
+    printf("GPIO Input Initialisation finished\n");
+
+    while(1)
+    {
+    	sleep(1);
+    	gpio_inputVal = in32(gpio_1_inputs); // Read from DE10 first 16 pins of GPIO_1
+    	//printf("GPIO input = %d\n", gpio_inputVal);
+    }
+
+}
+
 void *gpioController(void) // This function will crash if not on real DE10 hardware
 {
-    printf("Initialising\n");
+    printf("GPIO Output Initialising\n");
     // code that controls the LED GPIO pin based on the current values in the struct
     // code that that reads car and pedestrian (maybe in a different thread?)
 
@@ -74,41 +101,29 @@ void *gpioController(void) // This function will crash if not on real DE10 hardw
     // GPIO pointers
     uintptr_t gpio_LEDs = 0;
     uintptr_t gpio_0_outputs = 0;
-    uintptr_t gpio_1_inputs = 0;
-    uintptr_t Switches_inputs = 0;
+
 
     // Map outputs
     gpio_LEDs = mmap_device_io(PIO_SIZE, LEDs_BASE);
     gpio_0_outputs = mmap_device_io(PIO_SIZE, GPIO_0_BASE);
-    // Map inputs
-    gpio_1_inputs = mmap_device_io(PIO_SIZE, GPIO_1_BASE);
-    Switches_inputs = mmap_device_io(PIO_SIZE_Switches, SWITCHES_BASE);
 
-    //Read from inputs
-    tempVal = in32(Switches_inputs); // Read from DE10 4 slide switches
-    tempVal = in32(gpio_1_inputs);   // Read from DE10 first 16 pins of GPIO_1
     //Write to outputs
     out32(gpio_LEDs, tempVal);       // Write to DE10 LEDs
     out32(gpio_0_outputs, tempVal);  // Write to DE10 first 16 pins of GPIO_0
 
-    // Write outputs to WS2812B LEDs on GPIO_0 // Everything here is still in testing
+    // Write outputs to WS2812B LEDs on GPIO_0 //
     out32(gpio_0_outputs, 0);
     sleep(4);
 
-    printf("Initialisation finished\n");
+    printf("GPIO Output Initialisation finished\n");
 
     int *pointer = &intersection.north.pedestrian1;
     int i;
 
-//    for (i=0;i<1000;i++)
-//    {
-//        out32(gpio_0_outputs, 1); out32(gpio_0_outputs, 2); out32(gpio_0_outputs, 0);
-//    }
-
     while (1){
         pointer = &intersection.north.pedestrian1;
         sleep(1);
-        for(i = 0; i < 5; i++)
+        for(i = 0; i < 20; i++)
         {
             switch(*pointer)
             {
@@ -232,7 +247,7 @@ void *gpioController(void) // This function will crash if not on real DE10 hardw
             }
             pointer++;
         }
-        printf("\n");
+        printf(" State = %d\n",intersection.seqState);
     }
     return 0;
 };
@@ -274,7 +289,7 @@ void *daySequence(void)
 									 green,       red,     red,         red,     green,            green,       red,      red,         red,     green); intersection.seqState = day5;  break;
 						case day5:
 							setState(red,         yellow,  yellow,      off,     red,              red,         yellow,   yellow,      off,     red,
-									 flashing,    red,     red,         red,     flashing,         flashing,    red,      red,         red,     flashing); intersection.seqState = day6;  break;
+									  yellow,    red,     red,         red,     yellow,         yellow,    red,      red,         red,     yellow); intersection.seqState = day6;  break;
 						case day6:
 							setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
 									 red,         red,     red,         red,     red,              red,         red,      red,         red,     red); intersection.seqState = day7;  break;
@@ -292,8 +307,8 @@ void *daySequence(void)
 							setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
 									 red,         green,   green,       off,     red,              red,         green,    green,       off,     red); intersection.seqState = day11; break;
 						case day11:
-							setState(green,       red,     red,         red,     green,            green,       red,      red,         red,     green,
-									 red,         green,   green,       off,     red,              red,         green,    green,       off,     red); intersection.seqState = day12; break;
+							setState(yellow,       red,     red,         red,     yellow,          yellow,       red,      red,         red,    yellow,
+									 red,         yellow,   yellow,       off,     red,              red,         yellow,    yellow,       off,     red); intersection.seqState = day12; break;
 						case day12:
 							setState(red,         red,     red,         red,     red,              red,         red,      red,         red,     red,
 									 red,         red,     red,         red,     red,              red,         red,      red,         red,     red); intersection.seqState = day1; break;
@@ -326,24 +341,29 @@ void *nightSequence(void)
 						// Safe start
 						case initial:
 							setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
-									 red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night4;  break;
+									 red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night4; break;
 						// NS start
 						case night4:
 							setState(red,         green,   green,    off,     red,        red,          green,   green,     off,     red,
-									 green,       red,     red,      red,     green,      green,        red,     red,       red,     green   );  intersection.seqState = night5;  break;
+									 green,       red,     red,      red,     green,      green,        red,     red,       red,     green   );
+
+							while(gpio_inputVal == 65535){};
+							//while(gpio_inputVal == 65534){};
+							intersection.seqState = night5;
+							break;
 						case night5:
 							setState(red,         yellow,  yellow,   off,     red,        red,          yellow,  yellow,    off,     red,
-									 flashing,    red,     red,      red,     flashing,   flashing,     red,     red,       red,     flashing); intersection.seqState = night6;  break;
+									yellow,    red,     red,      red,     yellow,   yellow,     red,     red,       red,     yellow); intersection.seqState = night6;  break;
 						case night6:
 							setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
-									 red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night10;  break;
+									 red,         red,     red,      red,     red,        red,          red,     red,       red,     red     ); intersection.seqState = night10;break;
 						// EW start
 						case night10:
 							setState(green,       red,     red,      red,     green,      green,        red,     red,       red,     green,
 									 red,         green,   green,    off,     red,        red,          green,   green,     off,     red     );  intersection.seqState = night11; break;
 						case night11:
-							setState(green,       red,     red,      red,     green,      green,        red,     red,       red,     green,
-									 red,         green,   green,    off,     red,        red,          green,   green,     off,     red     );  intersection.seqState = night12; break;
+							setState(yellow,       red,     red,      red,     yellow,      yellow,        red,     red,       red,     yellow,
+									 red,         yellow,   yellow,    off,     red,        red,          yellow,   yellow,     off,     red     );  intersection.seqState = night12; break;
 						case night12:
 							setState(red,         red,     red,      red,     red,        red,          red,     red,       red,     red,
 									 red,         red,     red,      red,     red,        red,          red,     red,       red,     red     );  intersection.seqState = night4; break;
@@ -363,10 +383,6 @@ void* commandLineInputThread(void){
     while(true){
     	scanf("%s",buffer);//
 
-    	printf("%c,",buffer[0]);
-		printf("%c,",buffer[1]);
-		printf("%c\n",buffer[2]);
-
 		switch((int)buffer[0]){
 			case Q:
 				printf("Quitting thread\n");
@@ -375,6 +391,7 @@ void* commandLineInputThread(void){
 			case D:
 				printf("Starting day sequence\n");
 				pthread_cancel(&nightSequenceID);
+				pthread_cancel(&daySequenceID);
 				pthread_create(&daySequenceID, NULL, daySequence, NULL);
 				break;
 			case N:
@@ -383,18 +400,16 @@ void* commandLineInputThread(void){
 				} else {
 					printf("Starting night sequence\n");
 					pthread_cancel(&daySequenceID);
-					pthread_create(&nightSequenceID, NULL, daySequence, NULL);
+					pthread_cancel(&nightSequenceID);
+					pthread_create(&nightSequenceID, NULL, nightSequence, NULL);
 				}
 
 				break;
-			case B:
-				if(isBoomGateClosed){
-					printf("Boom Gate Opened\n");
-					unblockSouth();
-				} else {
-					printf("Boom Gate Closed\n");
-					blockSouth();
-				}
+			case T:
+				blockSouth();
+				break;
+			case F:
+				unblockSouth();
 				break;
 			case S:
 				setLight(buffer);
@@ -404,6 +419,7 @@ void* commandLineInputThread(void){
 				break;
 			case W:
 				setLight(buffer);
+				break;
 			default:
 				printf("Input not a command\n");
 				break;
@@ -464,7 +480,7 @@ void *ServerReceive(void) {
            }
 		   sprintf(replymsg.buf, "%d", intersection.seqState);
 
-           //printf("Server received %s \n", ReceiveBuff);
+           printf("Server received %s \n", ReceiveBuff);
 
            MsgReply(rcvid, EOK, &replymsg, sizeof(replymsg));
 
@@ -491,14 +507,11 @@ void *ServerReceive(void) {
 					}
 
 					break;
-				case B:
-					if(isBoomGateClosed){
-						printf("Boom Gate Opened\n");
-						unblockSouth();
-					} else {
-						printf("Boom Gate Closed\n");
-						blockSouth();
-					}
+				case T:
+					blockSouth();
+					break;
+				case F:
+					unblockSouth();
 					break;
 				case S:
 					setLight(ReceiveBuff);
@@ -508,6 +521,7 @@ void *ServerReceive(void) {
 					break;
 				case W:
 					setLight(ReceiveBuff);
+					break;
 				default:
 					//printf("Input not a command\n");
 					break;

@@ -25,6 +25,7 @@ int                     rcvid;
 timer            		msg;
 
 /// For Threads
+void *gpioInput(void);
 void *gpioController(void);
 void *daySequence(void);
 void *nightSequence(void);
