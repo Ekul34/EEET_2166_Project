@@ -648,7 +648,7 @@ void *messagesending_to_intersection(void *Not_used)
 			if ((server_coid_x1 = name_open(ATTACH_POINT_1, 0)) == -1)
 			{
 				printf("Cant ping train intersection 1, try again\n");
-				usleep(100);
+				usleep(5000000);
 			}
 
 		}
@@ -661,6 +661,7 @@ void *messagesending_to_intersection(void *Not_used)
 			pthread_mutex_unlock(&mutex1);
 		}//ping to x1 done
 
+		usleep(1000);
 
 
 
@@ -684,6 +685,7 @@ void *messagesending_to_intersection(void *Not_used)
 			}
 		}
 		//else;
+		usleep(100);
 	}
 }
 

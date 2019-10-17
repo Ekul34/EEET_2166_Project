@@ -18,9 +18,9 @@
 
 #include <sys/dispatch.h>
 #define BUF_SIZE 256
-#define ATTACH_POINT_1 "/net/cycloneVg01e/dev/name/local/TLC__1"
-#define ATTACH_POINT_2 "/net/cycloneV_user/dev/name/local/TLC_2" //traffic light 2
-#define ATTACH_POINT_3 "/net/RMIT_BBB_v5_07/dev/name/local/TC" //undefined yet
+#define ATTACH_POINT_1 "/net/cycloneVg01e/dev/name/local/TLC_2" //traffic light 1
+#define ATTACH_POINT_2 "/net/cycloneV_user/dev/name/local/TLC_1" //traffic light 2
+#define ATTACH_POINT_3 "/net/RMIT_BBB_v5_07/dev/name/local/TC" //train controller
 name_attach_t *attach;
 
 
@@ -50,6 +50,9 @@ const struct sigevent* Inthandler( void* area, int id )
 
 
 pthread_mutex_t mutex1;
+pthread_mutex_t mutex2_i1;
+pthread_mutex_t mutex3_i2;
+
 
 
 int synchronized = 1;
@@ -362,16 +365,15 @@ void *LCD_B_I1_states (void *data)
 	{
 		while(I1statereceived)
 		{
-			pthread_mutex_lock(&mutex1);
-			I1statereceived = 0;
-			pthread_mutex_unlock(&mutex1);
-
 			if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
 			// write some Text to the LCD screen
 			SetCursor(td->fd, td->Address,0,15); // set cursor on LCD to first position first line
 			sprintf(LCDdata,"I1=%s",I1statereceived_string);
 			I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
 			if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
+			pthread_mutex_lock(&mutex2_i1);
+			I1statereceived = 0;
+			pthread_mutex_unlock(&mutex2_i1);
 		}
 		usleep(100);
 	}
@@ -397,17 +399,15 @@ void *LCD_D_I2_states (void *data)
 
 		while(I2statereceived)
 		{
-			pthread_mutex_lock(&mutex1);
-			I2statereceived = 0;
-			pthread_mutex_unlock(&mutex1);
-
 			if(synchronized) pthread_mutex_lock(&td->mutex);     //lock the function to make sure the variables are protected
 			// write some Text to the LCD screen
 			SetCursor(td->fd, td->Address,1,15); // set cursor on LCD to first position first line
 			sprintf(LCDdata,"I2=%s",I2statereceived_string);
 			I2cWrite_(td->fd, td->Address, DATA_SEND, &LCDdata[0], sizeof(LCDdata));		// write new data to I2C
 			if(synchronized) pthread_mutex_unlock(&td->mutex);	//unlock the functions to release the variables for use by other functions
-
+			pthread_mutex_lock(&mutex3_i2);
+			I2statereceived = 0;
+			pthread_mutex_unlock(&mutex3_i2);
 		}
 
 		usleep(100);
@@ -594,7 +594,7 @@ void *messagesending_to_intersection(void *Not_used)
 	if ((server_coid_i1 = name_open(ATTACH_POINT_1, 0)) == -1) //change to while later
 	{
 		printf("Cant attach to TLC_1 first time\n");
-		usleep(100);
+		sleep(1);
 	} //connect to intersection 1
 
 
@@ -611,7 +611,7 @@ void *messagesending_to_intersection(void *Not_used)
 	if ((server_coid_i2 = name_open(ATTACH_POINT_2, 0)) == -1)
 	{
 		printf("Cant attach to TLC_2 first time\n");
-		usleep(100);
+		sleep(1);
 	} //connect to intersection 2
 
 	msg2.hdr.type = 0x00;
@@ -628,8 +628,7 @@ void *messagesending_to_intersection(void *Not_used)
 	if ((server_coid_tc = name_open(ATTACH_POINT_3, 0)) == -1)
 	{
 		printf("Cant attach to TC first time\n");
-		usleep(100);
-
+		sleep(1);
 	} //connect to train intersection
 
 	msg3.hdr.type = 0x00;
@@ -642,7 +641,7 @@ void *messagesending_to_intersection(void *Not_used)
 		sprintf(messagetosendtc, "");
 		if (MsgSend(server_coid_tc, &messagetosendtc, sizeof(messagetosendtc), &reply3, sizeof(reply3)) == -1)
 		{
-			printf("train controller send return -1\n");
+			//printf("train controller send return -1\n");
 			ConnectDetach(server_coid_tc);
 			if ((server_coid_tc = name_open(ATTACH_POINT_3, 0)) == -1)
 			{
@@ -653,65 +652,78 @@ void *messagesending_to_intersection(void *Not_used)
 		{
 			strcpy(receivedfromtc, reply3.buf);
 			//printf("receivedfromtc ->%s\n", receivedfromtc);
+			usleep(100);
 
 		}//ping to tc done
 
 
 
 		//ping i1
-		sprintf(messagetosendi1, receivedfromtc); //instad of empty, send message received from tc
-		printf("TLC sending to i1 %s \n", messagetosendi1);
+		strcpy(messagetosendi1, receivedfromtc); //instad of empty, send message received from tc
+		//printf("TLC sending to i1 %s \n", messagetosendi1);
 		if (MsgSend(server_coid_i1, &messagetosendi1, sizeof(messagetosendi1), &reply1, sizeof(reply1)) == -1)
 		{
-			strcpy(I1statereceived_string, "XX");
-			pthread_mutex_lock(&mutex1);
-			I1statereceived = 1;
-			pthread_mutex_unlock(&mutex1);
 
-			ConnectDetach(server_coid_i1);
-			if ((server_coid_i1 = name_open(ATTACH_POINT_1, 0)) == -1)
-			{
-				printf("Cant ping traffic intersection 1, try again\n");
-				usleep(100);
-			}
+			pthread_mutex_lock(&mutex2_i1);
+			strcpy(I1statereceived_string, "XX");
+			I1statereceived = 1;
+			pthread_mutex_unlock(&mutex2_i1);
+			printf("Cant ping traffic intersection 1, try again\n");
+			sleep(2);
+
+			//ConnectDetach(server_coid_i1);
+			printf("%d",server_coid_i1);
+//			if ((server_coid_i1 = name_open(ATTACH_POINT_1, 0)) == -1)
+//			{
+//				printf("Cant ping traffic intersection 1, try again\n");
+//				usleep(50000);
+//			}
 
 		}
 		else
 		{
-			//printf("   -->Reply is: '%s'\n", reply.buf);
+			printf("   -->Reply is: '%s'\n", reply1.buf);
+
+			pthread_mutex_lock(&mutex2_i1);
 			strcpy(I1statereceived_string, reply1.buf);
-			printf("Received from i1 %s\n", I1statereceived_string);
-			pthread_mutex_lock(&mutex1);
 			I1statereceived = 1;
-			pthread_mutex_unlock(&mutex1);
+			printf("Received from i1 %s\n", I1statereceived_string);
+			pthread_mutex_unlock(&mutex2_i1);
+			usleep(100);
 
 		}//ping to i1 done
 
 
 
 		//ping to i2 start
-		sprintf(messagetosendi2, receivedfromtc); //instad of empty, send message received from tc
+		strcpy(messagetosendi2, receivedfromtc); //instad of empty, send message received from tc
 		//printf("Client sending %s \n", messagetosendi1);
 		if (MsgSend(server_coid_i2, &messagetosendi2, sizeof(messagetosendi2), &reply2, sizeof(reply2)) == -1)
 		{
+			pthread_mutex_lock(&mutex3_i2);
 			strcpy(I2statereceived_string, "XX");
-			pthread_mutex_lock(&mutex1);
 			I2statereceived = 1;
-			pthread_mutex_unlock(&mutex1);
-			if ((server_coid_i2 = name_open(ATTACH_POINT_2, 0)) == -1)
-			{
-				printf("Cant ping traffic intersection 2, try again\n");
-			}
+			pthread_mutex_unlock(&mutex3_i2);
+			ConnectDetach(server_coid_i2);
+			printf("Cant ping traffic intersection 2, try again\n");
+			usleep(100);
 
+//			server_coid_i2 = name_open(ATTACH_POINT_2, 0);
+//			if (server_coid_i2 == -1)
+//			{
+//				printf("Cant ping traffic intersection 2, try again\n");
+//				usleep(100);
+//			}
 		}
 		else
 		{
 			//printf("   -->Reply is: '%s'\n", reply.buf);
-			strcpy(I2statereceived_string, reply2.buf);
-			pthread_mutex_lock(&mutex1);
-			I2statereceived = 1;
-			pthread_mutex_unlock(&mutex1);
 
+			pthread_mutex_lock(&mutex3_i2);
+			strcpy(I2statereceived_string, reply2.buf);
+			I2statereceived = 1;
+			pthread_mutex_unlock(&mutex3_i2);
+			usleep(100);
 		}
 
 
@@ -729,7 +741,7 @@ void *messagesending_to_intersection(void *Not_used)
 				pthread_mutex_lock(&mutex1);
 				messageready = 0;
 				pthread_mutex_unlock(&mutex1);
-
+				usleep(100);
 			}
 			else if(message[0] == '2')
 			{
@@ -740,6 +752,7 @@ void *messagesending_to_intersection(void *Not_used)
 				pthread_mutex_lock(&mutex1);
 				messageready = 0;
 				pthread_mutex_unlock(&mutex1);
+				usleep(100);
 			}
 		}
 
@@ -752,6 +765,10 @@ void *messagesending_to_intersection(void *Not_used)
 int main(int argc, char *argv[])
 {
 	pthread_mutex_init(&mutex1,NULL);
+	pthread_mutex_init(&mutex2_i1,NULL);
+	pthread_mutex_init(&mutex3_i2,NULL);
+
+
 	int file;
 	int error;
 	volatile uint8_t LCDi2cAdd = 0x3C;
